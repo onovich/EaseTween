@@ -1,0 +1,1 @@
+A timing management library to replace DoTween.
