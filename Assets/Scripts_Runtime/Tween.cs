@@ -2,24 +2,32 @@ using System;
 
 public class TweenModel {
 
+    float startValue;
+    float endValue;
+
     float duration;
-    TweenType tweenType;
-    Func<float, float> easingFunction;
+    Func<float, float, float, float, float> easingFunction;
 
     float elapsedTime;
     bool isPlaying;
 
-    float waitTime;
-    bool hasWaited;
-
     Action<float> onUpdate;
     Action onComplete;
-    Action onWaitFor;
 
-    public TweenModel(float duration, TweenType tweenType, Func<float, float> easingFunction) {
+    bool isComplete;
+    public bool IsComplete => isComplete;
+
+    bool isLoop;
+
+    public TweenModel(float startValue, float endValue, float duration, Func<float, float, float, float, float> easingFunction, bool isLoop) {
+        this.startValue = startValue;
+        this.endValue = endValue;
         this.duration = duration;
-        this.tweenType = tweenType;
         this.easingFunction = easingFunction;
+        this.isLoop = isLoop;
+        this.elapsedTime = 0;
+        this.isPlaying = false;
+        this.isComplete = false;
     }
 
     public TweenModel OnUpdate(Action<float> onUpdate) {
@@ -32,33 +40,16 @@ public class TweenModel {
         return this;
     }
 
-    public TweenModel WaitFor(float waitTime, Action onWaitFor) {
-        this.waitTime = waitTime;
-        this.onWaitFor = onWaitFor;
-        return this;
-    }
-
     public void Play() => isPlaying = true;
     public void Pause() => isPlaying = false;
     public void Restart() {
         elapsedTime = 0;
         isPlaying = true;
+        isComplete = false;
     }
 
     public void Tick(float dt) {
-        TickWait(dt);
         TickPlay(dt);
-    }
-
-    void TickWait(float dt) {
-        if (hasWaited) return;
-
-        waitTime -= dt;
-        if (waitTime <= 0) {
-            waitTime = 0;
-            hasWaited = true;
-            onWaitFor?.Invoke();
-        }
     }
 
     void TickPlay(float dt) {
@@ -69,10 +60,15 @@ public class TweenModel {
             elapsedTime = duration;
             isPlaying = false;
             onComplete?.Invoke();
+            isComplete = true;
+
+            if (isLoop) {
+                Restart();
+            }
+            return;
         }
 
-        float t = elapsedTime / duration;
-        float value = easingFunction(t);
+        float value = easingFunction(elapsedTime, startValue, endValue - startValue, duration);
         onUpdate?.Invoke(value);
     }
 
