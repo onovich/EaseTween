@@ -1,9 +1,10 @@
 using System;
+using UnityEngine;
 
-public class TweenModel {
+public class TweenModel_C32: ITween {
 
-    float startValue;
-    float endValue;
+    Color32 startValue;
+    Color32 endValue;
 
     float duration;
     Func<float, float, float, float, float> easingFunction;
@@ -11,7 +12,7 @@ public class TweenModel {
     float elapsedTime;
     bool isPlaying;
 
-    Action<float> onUpdate;
+    Action<Color32> onUpdate;
     Action onComplete;
 
     bool isComplete;
@@ -19,7 +20,7 @@ public class TweenModel {
 
     bool isLoop;
 
-    public TweenModel(float startValue, float endValue, float duration, Func<float, float, float, float, float> easingFunction, bool isLoop) {
+    public TweenModel_C32(Color32 startValue, Color32 endValue, float duration, Func<float, float, float, float, float> easingFunction, bool isLoop) {
         this.startValue = startValue;
         this.endValue = endValue;
         this.duration = duration;
@@ -30,12 +31,12 @@ public class TweenModel {
         this.isComplete = false;
     }
 
-    public TweenModel OnUpdate(Action<float> onUpdate) {
+    public TweenModel_C32 OnUpdate(Action<Color32> onUpdate) {
         this.onUpdate = onUpdate;
         return this;
     }
 
-    public TweenModel OnComplete(Action onComplete) {
+    public TweenModel_C32 OnComplete(Action onComplete) {
         this.onComplete = onComplete;
         return this;
     }
@@ -68,7 +69,11 @@ public class TweenModel {
             return;
         }
 
-        float value = easingFunction(elapsedTime, startValue, endValue - startValue, duration);
+        byte r = (byte)easingFunction(elapsedTime, startValue.r, endValue.r - startValue.r, duration);
+        byte g = (byte)easingFunction(elapsedTime, startValue.g, endValue.g - startValue.g, duration);
+        byte b = (byte)easingFunction(elapsedTime, startValue.b, endValue.b - startValue.b, duration);
+        byte a = (byte)easingFunction(elapsedTime, startValue.a, endValue.a - startValue.a, duration);
+        Color32 value = new Color32(r, g, b, a);
         onUpdate?.Invoke(value);
     }
 

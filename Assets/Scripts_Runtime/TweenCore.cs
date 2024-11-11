@@ -1,38 +1,48 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Numerics;
+using UnityEngine;
 
 public class TweenCore {
 
-    List<TweenModel> tweens;
+    List<ITween> tweens;
 
     public TweenCore() {
-        tweens = new List<TweenModel>();
+        tweens = new List<ITween>();
     }
 
-    public TweenModel Create(float startValue, float endValue, float duration, EasingType easingType, bool isLoop = false) {
-        var easingFunction = EasingFunction.GetEasingFunction(easingType);
-        var tween = new TweenModel(startValue, endValue, duration, easingFunction, isLoop);
+    public TweenModel_F Create(float startValue, float endValue, float duration, EasingType easingType, bool isLoop = false) {
+        var easingFunction = EasingFunction_F.GetEasingFunction(easingType);
+        var tween = new TweenModel_F(startValue, endValue, duration, easingFunction, isLoop);
         tweens.Add(tween);
         return tween;
     }
 
-    public void TryPause(TweenModel tween) {
-        if (tween != null) {
-            tween.Pause();
-        }
+    public TweenModel_V2 Create(Vector2 startValue, Vector2 endValue, float duration, EasingType easingType, bool isLoop = false) {
+        var easingFunction = EasingFunction_F.GetEasingFunction(easingType);
+        var tween = new TweenModel_V2(startValue, endValue, duration, easingFunction, isLoop);
+        tweens.Add(tween);
+        return tween;
     }
 
-    public void TryRestart(TweenModel tween) {
-        if (tween != null) {
-            tween.Restart();
-        }
+    public TweenModel_V3 Create(Vector3 startValue, Vector3 endValue, float duration, EasingType easingType, bool isLoop = false) {
+        var easingFunction = EasingFunction_F.GetEasingFunction(easingType);
+        var tween = new TweenModel_V3(startValue, endValue, duration, easingFunction, isLoop);
+        tweens.Add(tween);
+        return tween;
     }
 
-    public void TryPlay(TweenModel tween) {
-        if (tween != null) {
-            tween.Play();
-        }
+    public TweenModel_C32 Create(Color32 startValue, Color32 endValue, float duration, EasingType easingType, bool isLoop = false) {
+        var easingFunction = EasingFunction_F.GetEasingFunction(easingType);
+        var tween = new TweenModel_C32(startValue, endValue, duration, easingFunction, isLoop);
+        tweens.Add(tween);
+        return tween;
+    }
+
+    public TweenModel_C Create(Color startValue, Color endValue, float duration, EasingType easingType, bool isLoop = false) {
+        var easingFunction = EasingFunction_F.GetEasingFunction(easingType);
+        var tween = new TweenModel_C(startValue, endValue, duration, easingFunction, isLoop);
+        tweens.Add(tween);
+        return tween;
     }
 
     public void Tick(float dt) {
