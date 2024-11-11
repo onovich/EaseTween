@@ -18,26 +18,30 @@ public class SampleMain : MonoBehaviour {
         var posTween = tweenCore.Create(startPos, endPos, duration, easingType, isLoop);
         posTween.OnUpdate(value => {
             currentPoint.transform.position = value;
-        }).OnComplete(() => {
+        });
+        posTween.OnComplete(() => {
             currentPoint.transform.position = endPos;
             var startScale = startPoint.transform.localScale;
             var endScale = endPoint.transform.localScale;
             var scaleTween = tweenCore.Create(startScale, endScale, duration, easingType, isLoop);
             scaleTween.OnUpdate(value => {
                 currentPoint.transform.localScale = value;
-            }).OnComplete(() => {
+            });
+            scaleTween.OnComplete(() => {
                 currentPoint.transform.localScale = endScale;
                 var startColor = startPoint.GetComponent<SpriteRenderer>().color;
                 var endColor = endPoint.GetComponent<SpriteRenderer>().color;
                 var colorTween = tweenCore.Create(startColor, endColor, duration, easingType, isLoop);
                 colorTween.OnUpdate(value => {
                     currentPoint.GetComponent<SpriteRenderer>().color = value;
-                }).OnComplete(() => {
+                });
+                colorTween.OnComplete(() => {
                     currentPoint.GetComponent<SpriteRenderer>().color = endColor;
-                }).Play();
-            }).Play();
+                });
+                colorTween.Play();
+            });
+            scaleTween.Play();
         }).Play();
-
     }
 
     void Update() {
