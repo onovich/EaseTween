@@ -19,6 +19,13 @@ public class TweenCore {
         return tween;
     }
 
+    public TweenModel_Wait Create(float duration, EasingType easingType) {
+        var easingFunction = EasingFunction_F.GetEasingFunction(easingType);
+        var tween = new TweenModel_Wait(duration, easingFunction, false);
+        tweensToAdd.Enqueue(tween);
+        return tween;
+    }
+
     public TweenModel_V2 Create(Vector2 startValue, Vector2 endValue, float duration, EasingType easingType, bool isLoop = false) {
         var easingFunction = EasingFunction_F.GetEasingFunction(easingType);
         var tween = new TweenModel_V2(startValue, endValue, duration, easingFunction, isLoop);
