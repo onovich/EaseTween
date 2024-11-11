@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class TweenModel_C32: ITween {
+public class TweenModel_C32 : ITween {
 
     Color32 startValue;
     Color32 endValue;
@@ -12,13 +12,17 @@ public class TweenModel_C32: ITween {
     float elapsedTime;
     bool isPlaying;
 
-    Action<Color32> onUpdate;
-    Action onComplete;
+    public Action<Color32> OnUpdate;
+    public Action OnComplete;
 
     bool isComplete;
     public bool IsComplete => isComplete;
 
     bool isLoop;
+
+    int nextId;
+    public int NextId => nextId;
+    public void SetNextId(int id) => nextId = id;
 
     public TweenModel_C32(Color32 startValue, Color32 endValue, float duration, Func<float, float, float, float, float> easingFunction, bool isLoop) {
         this.startValue = startValue;
@@ -27,21 +31,12 @@ public class TweenModel_C32: ITween {
         this.easingFunction = easingFunction;
         this.isLoop = isLoop;
         this.elapsedTime = 0;
-        this.isPlaying = false;
+        this.isPlaying = true;
         this.isComplete = false;
+        nextId = -1;
     }
 
-    public TweenModel_C32 OnUpdate(Action<Color32> onUpdate) {
-        this.onUpdate = onUpdate;
-        return this;
-    }
-
-    public TweenModel_C32 OnComplete(Action onComplete) {
-        this.onComplete = onComplete;
-        return this;
-    }
-
-    public void Play() => isPlaying = true;
+    public void Play() => Restart();
     public void Pause() => isPlaying = false;
     public void Restart() {
         elapsedTime = 0;
@@ -60,7 +55,7 @@ public class TweenModel_C32: ITween {
         if (elapsedTime >= duration) {
             elapsedTime = duration;
             isPlaying = false;
-            onComplete?.Invoke();
+            OnComplete?.Invoke();
             isComplete = true;
 
             if (isLoop) {
@@ -74,7 +69,12 @@ public class TweenModel_C32: ITween {
         byte b = (byte)easingFunction(elapsedTime, startValue.b, endValue.b - startValue.b, duration);
         byte a = (byte)easingFunction(elapsedTime, startValue.a, endValue.a - startValue.a, duration);
         Color32 value = new Color32(r, g, b, a);
-        onUpdate?.Invoke(value);
+        OnUpdate?.Invoke(value);
+    }
+
+    public void Dispose() {
+        OnUpdate = null;
+        OnComplete = null;
     }
 
 }

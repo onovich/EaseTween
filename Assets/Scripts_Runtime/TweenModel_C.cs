@@ -12,13 +12,17 @@ public class TweenModel_C : ITween {
     float elapsedTime;
     bool isPlaying;
 
-    Action<Color> onUpdate;
-    Action onComplete;
+    public Action<Color> OnUpdate;
+    public Action OnComplete;
 
     bool isComplete;
     public bool IsComplete => isComplete;
 
     bool isLoop;
+
+    int nextId;
+    public int NextId => nextId;
+    public void SetNextId(int id) => nextId = id;
 
     public TweenModel_C(Color startValue, Color endValue, float duration, Func<float, float, float, float, float> easingFunction, bool isLoop) {
         this.startValue = startValue;
@@ -27,21 +31,12 @@ public class TweenModel_C : ITween {
         this.easingFunction = easingFunction;
         this.isLoop = isLoop;
         this.elapsedTime = 0;
-        this.isPlaying = false;
+        this.isPlaying = true;
         this.isComplete = false;
+        nextId = -1;
     }
 
-    public TweenModel_C OnUpdate(Action<Color> onUpdate) {
-        this.onUpdate = onUpdate;
-        return this;
-    }
-
-    public TweenModel_C OnComplete(Action onComplete) {
-        this.onComplete = onComplete;
-        return this;
-    }
-
-    public void Play() => isPlaying = true;
+    public void Play() => Restart();
     public void Pause() => isPlaying = false;
     public void Restart() {
         elapsedTime = 0;
@@ -60,7 +55,7 @@ public class TweenModel_C : ITween {
         if (elapsedTime >= duration) {
             elapsedTime = duration;
             isPlaying = false;
-            onComplete?.Invoke();
+            OnComplete?.Invoke();
             isComplete = true;
 
             if (isLoop) {
@@ -69,12 +64,17 @@ public class TweenModel_C : ITween {
             return;
         }
 
-        float r = easingFunction(elapsedTime, startValue.r, (endValue - startValue).r, duration);
-        float g = easingFunction(elapsedTime, startValue.g, (endValue - startValue).g, duration);
-        float b = easingFunction(elapsedTime, startValue.b, (endValue - startValue).b, duration);
-        float a = easingFunction(elapsedTime, startValue.a, (endValue - startValue).a, duration);
+        float r = easingFunction(elapsedTime, startValue.r, endValue.r - startValue.r, duration);
+        float g = easingFunction(elapsedTime, startValue.g, endValue.g - startValue.g, duration);
+        float b = easingFunction(elapsedTime, startValue.b, endValue.b - startValue.b, duration);
+        float a = easingFunction(elapsedTime, startValue.a, endValue.a - startValue.a, duration);
         Color value = new Color(r, g, b, a);
-        onUpdate?.Invoke(value);
+        OnUpdate?.Invoke(value);
+    }
+
+    public void Dispose() {
+        OnUpdate = null;
+        OnComplete = null;
     }
 
 }

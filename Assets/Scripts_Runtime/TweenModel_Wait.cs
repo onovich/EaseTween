@@ -8,34 +8,29 @@ public class TweenModel_Wait : ITween {
     float elapsedTime;
     bool isPlaying;
 
-    Action<float> onUpdate;
-    Action onComplete;
+    public Action<float> OnUpdate;
+    public Action OnComplete;
 
     bool isComplete;
     public bool IsComplete => isComplete;
 
     bool isLoop;
 
+    int nextId;
+    public int NextId => nextId;
+    public void SetNextId(int id) => nextId = id;
+
     public TweenModel_Wait(float duration, Func<float, float, float, float, float> easingFunction, bool isLoop) {
         this.duration = duration;
         this.easingFunction = easingFunction;
         this.isLoop = isLoop;
         this.elapsedTime = 0;
-        this.isPlaying = false;
+        this.isPlaying = true;
         this.isComplete = false;
+        nextId = -1;
     }
 
-    public TweenModel_Wait OnUpdate(Action<float> onUpdate) {
-        this.onUpdate = onUpdate;
-        return this;
-    }
-
-    public TweenModel_Wait OnComplete(Action onComplete) {
-        this.onComplete = onComplete;
-        return this;
-    }
-
-    public void Play() => isPlaying = true;
+    public void Play() => Restart();
     public void Pause() => isPlaying = false;
     public void Restart() {
         elapsedTime = 0;
@@ -54,7 +49,7 @@ public class TweenModel_Wait : ITween {
         if (elapsedTime >= duration) {
             elapsedTime = duration;
             isPlaying = false;
-            onComplete?.Invoke();
+            OnComplete?.Invoke();
             isComplete = true;
 
             if (isLoop) {
@@ -64,7 +59,12 @@ public class TweenModel_Wait : ITween {
         }
 
         float value = easingFunction(elapsedTime, 0, 100, duration);
-        onUpdate?.Invoke(value);
+        OnUpdate?.Invoke(value);
+    }
+
+    public void Dispose() {
+        OnUpdate = null;
+        OnComplete = null;
     }
 
 }

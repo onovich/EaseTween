@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class TweenModel_V2: ITween {
+public class TweenModel_V2 : ITween {
 
     Vector2 startValue;
     Vector2 endValue;
@@ -12,13 +12,17 @@ public class TweenModel_V2: ITween {
     float elapsedTime;
     bool isPlaying;
 
-    Action<Vector2> onUpdate;
-    Action onComplete;
+    public Action<Vector2> OnUpdate;
+    public Action OnComplete;
 
     bool isComplete;
     public bool IsComplete => isComplete;
 
     bool isLoop;
+
+    int nextId;
+    public int NextId => nextId;
+    public void SetNextId(int id) => nextId = id;
 
     public TweenModel_V2(Vector2 startValue, Vector2 endValue, float duration, Func<float, float, float, float, float> easingFunction, bool isLoop) {
         this.startValue = startValue;
@@ -27,21 +31,12 @@ public class TweenModel_V2: ITween {
         this.easingFunction = easingFunction;
         this.isLoop = isLoop;
         this.elapsedTime = 0;
-        this.isPlaying = false;
+        this.isPlaying = true;
         this.isComplete = false;
+        nextId = -1;
     }
 
-    public TweenModel_V2 OnUpdate(Action<Vector2> onUpdate) {
-        this.onUpdate = onUpdate;
-        return this;
-    }
-
-    public TweenModel_V2 OnComplete(Action onComplete) {
-        this.onComplete = onComplete;
-        return this;
-    }
-
-    public void Play() => isPlaying = true;
+    public void Play() => Restart();
     public void Pause() => isPlaying = false;
     public void Restart() {
         elapsedTime = 0;
@@ -60,7 +55,7 @@ public class TweenModel_V2: ITween {
         if (elapsedTime >= duration) {
             elapsedTime = duration;
             isPlaying = false;
-            onComplete?.Invoke();
+            OnComplete?.Invoke();
             isComplete = true;
 
             if (isLoop) {
@@ -72,7 +67,12 @@ public class TweenModel_V2: ITween {
         float x = easingFunction(elapsedTime, startValue.x, (endValue - startValue).x, duration);
         float y = easingFunction(elapsedTime, startValue.y, (endValue - startValue).y, duration);
         Vector2 value = new Vector2(x, y);
-        onUpdate?.Invoke(value);
+        OnUpdate?.Invoke(value);
+    }
+
+    public void Dispose() {
+        OnUpdate = null;
+        OnComplete = null;
     }
 
 }

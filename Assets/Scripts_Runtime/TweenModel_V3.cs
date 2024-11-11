@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class TweenModel_V3: ITween {
+public class TweenModel_V3 : ITween {
 
     Vector3 startValue;
     Vector3 endValue;
@@ -12,13 +12,17 @@ public class TweenModel_V3: ITween {
     float elapsedTime;
     bool isPlaying;
 
-    Action<Vector3> onUpdate;
-    Action onComplete;
+    public Action<Vector3> OnUpdate;
+    public Action OnComplete;
 
     bool isComplete;
     public bool IsComplete => isComplete;
 
     bool isLoop;
+
+    int nextId;
+    public int NextId => nextId;
+    public void SetNextId(int id) => nextId = id;
 
     public TweenModel_V3(Vector3 startValue, Vector3 endValue, float duration, Func<float, float, float, float, float> easingFunction, bool isLoop) {
         this.startValue = startValue;
@@ -27,21 +31,12 @@ public class TweenModel_V3: ITween {
         this.easingFunction = easingFunction;
         this.isLoop = isLoop;
         this.elapsedTime = 0;
-        this.isPlaying = false;
+        this.isPlaying = true;
         this.isComplete = false;
+        nextId = -1;
     }
 
-    public TweenModel_V3 OnUpdate(Action<Vector3> onUpdate) {
-        this.onUpdate = onUpdate;
-        return this;
-    }
-
-    public TweenModel_V3 OnComplete(Action onComplete) {
-        this.onComplete = onComplete;
-        return this;
-    }
-
-    public void Play() => isPlaying = true;
+    public void Play() => Restart();
     public void Pause() => isPlaying = false;
     public void Restart() {
         elapsedTime = 0;
@@ -60,7 +55,7 @@ public class TweenModel_V3: ITween {
         if (elapsedTime >= duration) {
             elapsedTime = duration;
             isPlaying = false;
-            onComplete?.Invoke();
+            OnComplete?.Invoke();
             isComplete = true;
 
             if (isLoop) {
@@ -73,7 +68,12 @@ public class TweenModel_V3: ITween {
         float y = easingFunction(elapsedTime, startValue.y, (endValue - startValue).y, duration);
         float z = easingFunction(elapsedTime, startValue.z, (endValue - startValue).z, duration);
         Vector3 value = new Vector3(x, y, z);
-        onUpdate?.Invoke(value);
+        OnUpdate?.Invoke(value);
+    }
+
+    public void Dispose() {
+        OnUpdate = null;
+        OnComplete = null;
     }
 
 }
