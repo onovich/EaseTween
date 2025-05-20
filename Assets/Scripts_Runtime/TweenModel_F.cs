@@ -1,6 +1,6 @@
 using System;
 
-public class TweenModel_F : ITween {
+internal class TweenModel_F : ITween {
 
     float startValue;
     float endValue;
@@ -11,19 +11,19 @@ public class TweenModel_F : ITween {
     float elapsedTime;
     bool isPlaying;
 
-    public Action<float> OnUpdate;
-    public Action OnComplete;
+    internal Action<float> OnUpdate;
+    internal Action OnComplete;
 
     bool isComplete;
-    public bool IsComplete => isComplete;
+    bool ITween.IsComplete => isComplete;
 
     bool isLoop;
 
     int nextId;
-    public int NextId => nextId;
-    public void SetNextId(int id) => nextId = id;
+    int ITween.NextId => nextId;
+    void ITween.SetNextId(int id) => nextId = id;
 
-    public TweenModel_F(float startValue, float endValue, float duration, Func<float, float, float, float, float> easingFunction, bool isLoop) {
+    internal TweenModel_F(float startValue, float endValue, float duration, Func<float, float, float, float, float> easingFunction, bool isLoop) {
         this.startValue = startValue;
         this.endValue = endValue;
         this.duration = duration;
@@ -35,15 +35,16 @@ public class TweenModel_F : ITween {
         nextId = -1;
     }
 
-    public void Play() => Restart();
-    public void Pause() => isPlaying = false;
-    public void Restart() {
+    void ITween.Play() => Restart();
+    void ITween.Pause() => isPlaying = false;
+    void ITween.Restart() => Restart();
+    void Restart() {
         elapsedTime = 0;
         isPlaying = true;
         isComplete = false;
     }
 
-    public void Tick(float dt) {
+    void ITween.Tick(float dt) {
         TickPlay(dt);
     }
 
@@ -67,7 +68,7 @@ public class TweenModel_F : ITween {
         OnUpdate?.Invoke(value);
     }
 
-    public void Dispose() {
+    void ITween.Dispose() {
         OnUpdate = null;
         OnComplete = null;
     }

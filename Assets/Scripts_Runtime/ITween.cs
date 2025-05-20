@@ -1,4 +1,4 @@
-public interface ITween {
+internal interface ITween {
     void Play();
     void Pause();
     void Restart();

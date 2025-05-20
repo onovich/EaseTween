@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class TweenModel_C : ITween {
+internal class TweenModel_C : ITween {
 
     Color startValue;
     Color endValue;
@@ -12,19 +12,20 @@ public class TweenModel_C : ITween {
     float elapsedTime;
     bool isPlaying;
 
-    public Action<Color> OnUpdate;
-    public Action OnComplete;
+    internal Action<Color> OnUpdate;
+    internal Action OnComplete;
 
     bool isComplete;
-    public bool IsComplete => isComplete;
+    bool ITween.IsComplete => isComplete;
 
     bool isLoop;
 
     int nextId;
-    public int NextId => nextId;
-    public void SetNextId(int id) => nextId = id;
+    int ITween.NextId => nextId;
 
-    public TweenModel_C(Color startValue, Color endValue, float duration, Func<float, float, float, float, float> easingFunction, bool isLoop) {
+    void ITween.SetNextId(int id) => nextId = id;
+
+    internal TweenModel_C(Color startValue, Color endValue, float duration, Func<float, float, float, float, float> easingFunction, bool isLoop) {
         this.startValue = startValue;
         this.endValue = endValue;
         this.duration = duration;
@@ -36,15 +37,16 @@ public class TweenModel_C : ITween {
         nextId = -1;
     }
 
-    public void Play() => Restart();
-    public void Pause() => isPlaying = false;
-    public void Restart() {
+    void ITween.Play() => Restart();
+    void ITween.Pause() => isPlaying = false;
+    void ITween.Restart() => Restart();
+    void Restart() {
         elapsedTime = 0;
         isPlaying = true;
         isComplete = false;
     }
 
-    public void Tick(float dt) {
+    void ITween.Tick(float dt) {
         TickPlay(dt);
     }
 
@@ -72,7 +74,7 @@ public class TweenModel_C : ITween {
         OnUpdate?.Invoke(value);
     }
 
-    public void Dispose() {
+    void ITween.Dispose() {
         OnUpdate = null;
         OnComplete = null;
     }
