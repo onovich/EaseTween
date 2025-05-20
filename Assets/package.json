@@ -7,7 +7,7 @@
         "email": "onovich1110@gmail.com"
     },
     "displayName": "MortiseFrame.EaseTween",
-    "description": "An easing function library.",
+    "description": "A timing management library to replace DoTween.",
     "documentationURL": "https://github.com/onovich/EaseTween",
     "hideInEditor": false,
     "category": "Easing",
