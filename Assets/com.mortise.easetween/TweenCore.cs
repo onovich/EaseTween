@@ -7,15 +7,39 @@ public sealed class TweenCore : IDisposable {
     SortedList<int, TweenModel> tweens;
     Dictionary<int, TweenValueRangeModel> ranges;
     Dictionary<int, TweenValueModel> values;
-    Dictionary<int, Action> onCompleteCallbacks;
-    Dictionary<int, Action> onUpdateCallbacks;
+    Dictionary<int, Action<float>> onCompleteCallbacks_float;
+    Dictionary<int, Action<float>> onUpdateCallbacks_float;
+    Dictionary<int, Action<Vector2>> onCompleteCallbacks_vector2;
+    Dictionary<int, Action<Vector2>> onUpdateCallbacks_vector2;
+    Dictionary<int, Action<Vector3>> onCompleteCallbacks_vector3;
+    Dictionary<int, Action<Vector3>> onUpdateCallbacks_vector3;
+    Dictionary<int, Action<Color>> onCompleteCallbacks_color;
+    Dictionary<int, Action<Color>> onUpdateCallbacks_color;
+    Dictionary<int, Action<Color32>> onCompleteCallbacks_color32;
+    Dictionary<int, Action<Color32>> onUpdateCallbacks_color32;
+    Dictionary<int, Action<Quaternion>> onCompleteCallbacks_quaternion;
+    Dictionary<int, Action<Quaternion>> onUpdateCallbacks_quaternion;
+    Dictionary<int, Action> onWaiteCompleteCallbacks;
     int nextId = 1;
 
     public TweenCore() {
         tweens = new SortedList<int, TweenModel>();
         ranges = new Dictionary<int, TweenValueRangeModel>();
-        onCompleteCallbacks = new Dictionary<int, Action>();
-        onUpdateCallbacks = new Dictionary<int, Action>();
+        values = new Dictionary<int, TweenValueModel>();
+        onCompleteCallbacks_float = new Dictionary<int, Action<float>>();
+        onUpdateCallbacks_float = new Dictionary<int, Action<float>>();
+        onCompleteCallbacks_vector2 = new Dictionary<int, Action<Vector2>>();
+        onUpdateCallbacks_vector2 = new Dictionary<int, Action<Vector2>>();
+        onCompleteCallbacks_vector3 = new Dictionary<int, Action<Vector3>>();
+        onUpdateCallbacks_vector3 = new Dictionary<int, Action<Vector3>>();
+        onCompleteCallbacks_color = new Dictionary<int, Action<Color>>();
+        onUpdateCallbacks_color = new Dictionary<int, Action<Color>>();
+        onCompleteCallbacks_color32 = new Dictionary<int, Action<Color32>>();
+        onUpdateCallbacks_color32 = new Dictionary<int, Action<Color32>>();
+        onCompleteCallbacks_quaternion = new Dictionary<int, Action<Quaternion>>();
+        onUpdateCallbacks_quaternion = new Dictionary<int, Action<Quaternion>>();
+        onWaiteCompleteCallbacks = new Dictionary<int, Action>();
+        nextId = 1;
     }
 
     #region Create Tweens
@@ -115,19 +139,195 @@ public sealed class TweenCore : IDisposable {
     #endregion
 
     #region Callbacks
-    public void OnComplete(int tweenId, Action callback) {
-        if (onCompleteCallbacks.ContainsKey(tweenId)) {
-            onCompleteCallbacks[tweenId] += callback;
+    public void OnComplete(int tweenId, Action<float> callback) {
+        if (onCompleteCallbacks_float.ContainsKey(tweenId)) {
+            onCompleteCallbacks_float[tweenId] += callback;
         } else {
-            onCompleteCallbacks[tweenId] = callback;
+            onCompleteCallbacks_float[tweenId] = callback;
         }
     }
 
-    public void OnUpdate(int tweenId, Action callback) {
-        if (onUpdateCallbacks.ContainsKey(tweenId)) {
-            onUpdateCallbacks[tweenId] += callback;
+    public void OnUpdate(int tweenId, Action<float> callback) {
+        if (onUpdateCallbacks_float.ContainsKey(tweenId)) {
+            onUpdateCallbacks_float[tweenId] += callback;
         } else {
-            onUpdateCallbacks[tweenId] = callback;
+            onUpdateCallbacks_float[tweenId] = callback;
+        }
+    }
+
+    public void OnComplete(int tweenId, Action<Vector2> callback) {
+        if (onCompleteCallbacks_vector2.ContainsKey(tweenId)) {
+            onCompleteCallbacks_vector2[tweenId] += callback;
+        } else {
+            onCompleteCallbacks_vector2[tweenId] = callback;
+        }
+    }
+
+    public void OnUpdate(int tweenId, Action<Vector2> callback) {
+        if (onUpdateCallbacks_vector2.ContainsKey(tweenId)) {
+            onUpdateCallbacks_vector2[tweenId] += callback;
+        } else {
+            onUpdateCallbacks_vector2[tweenId] = callback;
+        }
+    }
+
+    public void OnComplete(int tweenId, Action<Vector3> callback) {
+        if (onCompleteCallbacks_vector3.ContainsKey(tweenId)) {
+            onCompleteCallbacks_vector3[tweenId] += callback;
+        } else {
+            onCompleteCallbacks_vector3[tweenId] = callback;
+        }
+    }
+
+    public void OnUpdate(int tweenId, Action<Vector3> callback) {
+        if (onUpdateCallbacks_vector3.ContainsKey(tweenId)) {
+            onUpdateCallbacks_vector3[tweenId] += callback;
+        } else {
+            onUpdateCallbacks_vector3[tweenId] = callback;
+        }
+    }
+
+    public void OnComplete(int tweenId, Action<Color> callback) {
+        if (onCompleteCallbacks_color.ContainsKey(tweenId)) {
+            onCompleteCallbacks_color[tweenId] += callback;
+        } else {
+            onCompleteCallbacks_color[tweenId] = callback;
+        }
+    }
+
+    public void OnUpdate(int tweenId, Action<Color> callback) {
+        if (onUpdateCallbacks_color.ContainsKey(tweenId)) {
+            onUpdateCallbacks_color[tweenId] += callback;
+        } else {
+            onUpdateCallbacks_color[tweenId] = callback;
+        }
+    }
+
+    public void OnComplete(int tweenId, Action<Color32> callback) {
+        if (onCompleteCallbacks_color32.ContainsKey(tweenId)) {
+            onCompleteCallbacks_color32[tweenId] += callback;
+        } else {
+            onCompleteCallbacks_color32[tweenId] = callback;
+        }
+    }
+
+    public void OnUpdate(int tweenId, Action<Color32> callback) {
+        if (onUpdateCallbacks_color32.ContainsKey(tweenId)) {
+            onUpdateCallbacks_color32[tweenId] += callback;
+        } else {
+            onUpdateCallbacks_color32[tweenId] = callback;
+        }
+    }
+
+    public void OnComplete(int tweenId, Action<Quaternion> callback) {
+        if (onCompleteCallbacks_quaternion.ContainsKey(tweenId)) {
+            onCompleteCallbacks_quaternion[tweenId] += callback;
+        } else {
+            onCompleteCallbacks_quaternion[tweenId] = callback;
+        }
+    }
+
+    public void OnUpdate(int tweenId, Action<Quaternion> callback) {
+        if (onUpdateCallbacks_quaternion.ContainsKey(tweenId)) {
+            onUpdateCallbacks_quaternion[tweenId] += callback;
+        } else {
+            onUpdateCallbacks_quaternion[tweenId] = callback;
+        }
+    }
+
+    public void OnWaitComplete(int tweenId, Action callback) {
+        if (onWaiteCompleteCallbacks.ContainsKey(tweenId)) {
+            onWaiteCompleteCallbacks[tweenId] += callback;
+        } else {
+            onWaiteCompleteCallbacks[tweenId] = callback;
+        }
+    }
+
+    void OnComplete(int tweenId) {
+        var tween = tweens[tweenId];
+        var type = tween.type;
+        switch (type) {
+            case TweenType.Float:
+                if (onCompleteCallbacks_float.TryGetValue(tweenId, out var callback_float)) {
+                    callback_float?.Invoke(values[tweenId].floatValue);
+                }
+                break;
+            case TweenType.Vector2:
+                if (onCompleteCallbacks_vector2.TryGetValue(tweenId, out var callback_vector2)) {
+                    callback_vector2?.Invoke(values[tweenId].vector2Value);
+                }
+                break;
+            case TweenType.Vector3:
+                if (onCompleteCallbacks_vector3.TryGetValue(tweenId, out var callback_vector3)) {
+                    callback_vector3?.Invoke(values[tweenId].vector3Value);
+                }
+                break;
+            case TweenType.Color:
+                if (onCompleteCallbacks_color.TryGetValue(tweenId, out var callback_color)) {
+                    callback_color?.Invoke(values[tweenId].colorValue);
+                }
+                break;
+            case TweenType.Color32:
+
+                if (onCompleteCallbacks_color32.TryGetValue(tweenId, out var callback_color32)) {
+                    callback_color32?.Invoke(values[tweenId].color32Value);
+                }
+                break;
+            case TweenType.Quaternion:
+                if (onCompleteCallbacks_quaternion.TryGetValue(tweenId, out var callback_quaternion)) {
+                    callback_quaternion?.Invoke(values[tweenId].quaternionValue);
+                }
+                break;
+            case TweenType.Wait:
+                if (onWaiteCompleteCallbacks.TryGetValue(tweenId, out var callback_wait)) {
+                    callback_wait?.Invoke();
+                }
+                break;
+            default:
+                Debug.LogWarning($"Unsupported tween type: {type}");
+                break;
+        }
+    }
+
+    void OnUpdate(int tweenId) {
+        var tween = tweens[tweenId];
+        var type = tween.type;
+        switch (type) {
+            case TweenType.Float:
+                if (onUpdateCallbacks_float.TryGetValue(tweenId, out var callback_float)) {
+                    callback_float?.Invoke(values[tweenId].floatValue);
+                }
+                break;
+            case TweenType.Vector2:
+                if (onUpdateCallbacks_vector2.TryGetValue(tweenId, out var callback_vector2)) {
+                    callback_vector2?.Invoke(values[tweenId].vector2Value);
+                }
+                break;
+            case TweenType.Vector3:
+                if (onUpdateCallbacks_vector3.TryGetValue(tweenId, out var callback_vector3)) {
+                    callback_vector3?.Invoke(values[tweenId].vector3Value);
+                }
+                break;
+            case TweenType.Color:
+                if (onUpdateCallbacks_color.TryGetValue(tweenId, out var callback_color)) {
+                    callback_color?.Invoke(values[tweenId].colorValue);
+                }
+                break;
+            case TweenType.Color32:
+                if (onUpdateCallbacks_color32.TryGetValue(tweenId, out var callback_color32)) {
+                    callback_color32?.Invoke(values[tweenId].color32Value);
+                }
+                break;
+            case TweenType.Quaternion:
+                if (onUpdateCallbacks_quaternion.TryGetValue(tweenId, out var callback_quaternion)) {
+                    callback_quaternion?.Invoke(values[tweenId].quaternionValue);
+                }
+                break;
+            case TweenType.Wait:
+                break;
+            default:
+                Debug.LogWarning($"Unsupported tween type: {type}");
+                break;
         }
     }
     #endregion
@@ -149,9 +349,7 @@ public sealed class TweenCore : IDisposable {
                 tween.isComplete = true;
 
                 // 触发完成回调
-                if (onCompleteCallbacks.TryGetValue(id, out var completeCallback)) {
-                    completeCallback?.Invoke();
-                }
+                OnComplete(id);
 
                 if (tween.isLoop) {
                     Restart(id);
@@ -160,9 +358,7 @@ public sealed class TweenCore : IDisposable {
                 }
             } else {
                 // 触发更新回调
-                if (onUpdateCallbacks.TryGetValue(id, out var updateCallback)) {
-                    updateCallback?.Invoke();
-                }
+                OnUpdate(id);
 
                 // 计算当前值
                 switch (tween.type) {
@@ -198,7 +394,7 @@ public sealed class TweenCore : IDisposable {
         var range = ranges[id];
         var value = values[id];
 
-        value.floatValue = EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.floatValue = EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.floatStart,
             range.floatEnd - range.floatStart,
@@ -212,12 +408,12 @@ public sealed class TweenCore : IDisposable {
         var range = ranges[id];
         var value = values[id];
 
-        value.vector2Value.x = EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.vector2Value.x = EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.vector2Start.x,
             range.vector2End.x - range.vector2Start.x,
             tween.duration);
-        value.vector2Value.y = EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.vector2Value.y = EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.vector2Start.y,
             range.vector2End.y - range.vector2Start.y,
@@ -231,17 +427,17 @@ public sealed class TweenCore : IDisposable {
         var range = ranges[id];
         var value = values[id];
 
-        value.vector3Value.x = EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.vector3Value.x = EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.vector3Start.x,
             range.vector3End.x - range.vector3Start.x,
             tween.duration);
-        value.vector3Value.y = EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.vector3Value.y = EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.vector3Start.y,
             range.vector3End.y - range.vector3Start.y,
             tween.duration);
-        value.vector3Value.z = EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.vector3Value.z = EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.vector3Start.z,
             range.vector3End.z - range.vector3Start.z,
@@ -255,22 +451,22 @@ public sealed class TweenCore : IDisposable {
         var range = ranges[id];
         var value = values[id];
 
-        value.colorValue.r = EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.colorValue.r = EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.colorStart.r,
             range.colorEnd.r - range.colorStart.r,
             tween.duration);
-        value.colorValue.g = EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.colorValue.g = EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.colorStart.g,
             range.colorEnd.g - range.colorStart.g,
             tween.duration);
-        value.colorValue.b = EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.colorValue.b = EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.colorStart.b,
             range.colorEnd.b - range.colorStart.b,
             tween.duration);
-        value.colorValue.a = EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.colorValue.a = EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.colorStart.a,
             range.colorEnd.a - range.colorStart.a,
@@ -284,22 +480,22 @@ public sealed class TweenCore : IDisposable {
         var range = ranges[id];
         var value = values[id];
 
-        value.color32Value.r = (byte)EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.color32Value.r = (byte)EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.color32Start.r,
             range.color32End.r - range.color32Start.r,
             tween.duration);
-        value.color32Value.g = (byte)EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.color32Value.g = (byte)EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.color32Start.g,
             range.color32End.g - range.color32Start.g,
             tween.duration);
-        value.color32Value.b = (byte)EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.color32Value.b = (byte)EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.color32Start.b,
             range.color32End.b - range.color32Start.b,
             tween.duration);
-        value.color32Value.a = (byte)EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.color32Value.a = (byte)EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.color32Start.a,
             range.color32End.a - range.color32Start.a,
@@ -313,22 +509,22 @@ public sealed class TweenCore : IDisposable {
         var range = ranges[id];
         var value = values[id];
 
-        value.quaternionValue.x = EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.quaternionValue.x = EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.quaternionStart.x,
             range.quaternionEnd.x - range.quaternionStart.x,
             tween.duration);
-        value.quaternionValue.y = EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.quaternionValue.y = EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.quaternionStart.y,
             range.quaternionEnd.y - range.quaternionStart.y,
             tween.duration);
-        value.quaternionValue.z = EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.quaternionValue.z = EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.quaternionStart.z,
             range.quaternionEnd.z - range.quaternionStart.z,
             tween.duration);
-        value.quaternionValue.w = EasingFunction_F.GetEasingFunction(tween.easing)(
+        value.quaternionValue.w = EasingFunction.GetEasingFunction(tween.easing)(
             tween.elapsedTime,
             range.quaternionStart.w,
             range.quaternionEnd.w - range.quaternionStart.w,
@@ -399,8 +595,35 @@ public sealed class TweenCore : IDisposable {
         tweens.Clear();
         ranges.Clear();
         values.Clear();
-        onCompleteCallbacks.Clear();
-        onUpdateCallbacks.Clear();
+        onCompleteCallbacks_float.Clear();
+        onUpdateCallbacks_float.Clear();
+        onCompleteCallbacks_vector2.Clear();
+        onUpdateCallbacks_vector2.Clear();
+        onCompleteCallbacks_vector3.Clear();
+        onUpdateCallbacks_vector3.Clear();
+        onCompleteCallbacks_color.Clear();
+        onUpdateCallbacks_color.Clear();
+        onCompleteCallbacks_color32.Clear();
+        onUpdateCallbacks_color32.Clear();
+        onCompleteCallbacks_quaternion.Clear();
+        onUpdateCallbacks_quaternion.Clear();
+        onWaiteCompleteCallbacks.Clear();
+        tweens = null;
+        ranges = null;
+        values = null;
+        onCompleteCallbacks_float = null;
+        onUpdateCallbacks_float = null;
+        onCompleteCallbacks_vector2 = null;
+        onUpdateCallbacks_vector2 = null;
+        onCompleteCallbacks_vector3 = null;
+        onUpdateCallbacks_vector3 = null;
+        onCompleteCallbacks_color = null;
+        onUpdateCallbacks_color = null;
+        onCompleteCallbacks_color32 = null;
+        onUpdateCallbacks_color32 = null;
+        onCompleteCallbacks_quaternion = null;
+        onUpdateCallbacks_quaternion = null;
+        onWaiteCompleteCallbacks = null;
         nextId = 1;
     }
 }

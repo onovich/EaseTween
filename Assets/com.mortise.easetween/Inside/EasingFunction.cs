@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-internal static class EasingFunction_F {
+internal static class EasingFunction {
 
     internal static Func<float, float, float, float, float> GetEasingFunction(EasingType mode) {
         if (mode == EasingType.Linear) {
