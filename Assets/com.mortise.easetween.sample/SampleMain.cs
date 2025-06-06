@@ -16,22 +16,22 @@ public class SampleMain : MonoBehaviour {
         var startPos = startPoint.transform.position;
         var endPos = endPoint.transform.position;
         var posTween1 = tweenCore.Create(startPos, endPos, duration, easingType, isLoop);
-        tweenCore.ListenTick(posTween1, (Vector3 pos) => {
+        tweenCore.OnUpdate(posTween1, (Vector3 pos) => {
             currentPoint.transform.position = pos;
         });
         var posTween2 = tweenCore.Create(endPos, startPos, duration, easingType, isLoop);
-        tweenCore.ListenTick(posTween2, (Vector3 pos) => {
+        tweenCore.OnUpdate(posTween2, (Vector3 pos) => {
             currentPoint.transform.position = pos;
         });
 
         var startScale = startPoint.transform.localScale;
         var endScale = endPoint.transform.localScale;
         var scaleTween1 = tweenCore.Create(startScale, endScale, duration, easingType, isLoop);
-        tweenCore.ListenTick(scaleTween1, (Vector3 scale) => {
+        tweenCore.OnUpdate(scaleTween1, (Vector3 scale) => {
             currentPoint.transform.localScale = scale;
         });
         var scaleTween2 = tweenCore.Create(endScale, startScale, duration, easingType, isLoop);
-        tweenCore.ListenTick(scaleTween2, (Vector3 scale) => {
+        tweenCore.OnUpdate(scaleTween2, (Vector3 scale) => {
             currentPoint.transform.localScale = scale;
         });
 
