@@ -128,7 +128,7 @@ public sealed class TweenCore : IDisposable {
         model.easing = easing;
         model.isLoop = isLoop;
         model.elapsedTime = 0;
-        model.isPlaying = true;
+        model.isPlaying = false;
         model.isComplete = false;
         model.nextId = -1;
 
