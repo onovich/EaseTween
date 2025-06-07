@@ -332,10 +332,10 @@ public sealed class TweenCore : IDisposable {
     }
     #endregion
 
-    // 每帧更新
-    public void Update(float deltaTime) {
+    #region Tick
+    public void Tick(float deltaTime) {
         for (int i = 0; i < tweens.Values.Count; i++) {
-            var tween = tweens[i];
+            var tween = tweens.Values[i];
             int id = tween.id;
 
             if (!tween.isPlaying) continue;
@@ -387,6 +387,7 @@ public sealed class TweenCore : IDisposable {
             tweens[i] = tween;
         }
     }
+    #endregion
 
     #region Update Tweens
     void UpdateFloat(int id) {

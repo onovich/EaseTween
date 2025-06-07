@@ -9,6 +9,7 @@ public class SampleMain : MonoBehaviour {
     public GameObject currentPoint;
     public bool isLoop;
     public float duration;
+    public bool isTearedDown;
 
     void Start() {
         tweenCore = new TweenCore();
@@ -38,11 +39,11 @@ public class SampleMain : MonoBehaviour {
         var startColor = startPoint.GetComponent<SpriteRenderer>().color;
         var endColor = endPoint.GetComponent<SpriteRenderer>().color;
         var colorTween1 = tweenCore.Create(startColor, endColor, duration, easingType, isLoop);
-        tweenCore.ListenTick(colorTween1, (Color color) => {
+        tweenCore.OnUpdate(colorTween1, (Color color) => {
             currentPoint.GetComponent<SpriteRenderer>().color = color;
         });
         var colorTween2 = tweenCore.Create(endColor, startColor, duration, easingType, isLoop);
-        tweenCore.ListenTick(colorTween2, (Color color) => {
+        tweenCore.OnUpdate(colorTween2, (Color color) => {
             currentPoint.GetComponent<SpriteRenderer>().color = color;
         });
 
@@ -61,11 +62,19 @@ public class SampleMain : MonoBehaviour {
     }
 
     void OnApplicationQuit() {
+        if (isTearedDown) {
+            return;
+        }
         tweenCore.Dispose();
+        isTearedDown = true;
     }
 
     void OnDestroy() {
+        if (isTearedDown) {
+            return;
+        }
         tweenCore.Dispose();
+        isTearedDown = true;
     }
 
 }
