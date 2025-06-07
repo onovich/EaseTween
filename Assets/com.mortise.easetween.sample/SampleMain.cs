@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SampleMain : MonoBehaviour {
 
@@ -10,6 +11,9 @@ public class SampleMain : MonoBehaviour {
     public bool isLoop;
     public float duration;
     public bool isTearedDown;
+    public string[] strings = new string[] { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+    public Text text;
+    int textIndex;
 
     void Start() {
         tweenCore = new TweenCore();
@@ -59,10 +63,25 @@ public class SampleMain : MonoBehaviour {
         tweenCore.Link(tween_color_from_end_to_start, tween_move_from_start_to_end);
 
         tweenCore.Play(tween_move_from_start_to_end);
+
+
+        int stringIndexStart = 0;
+        int stringIndexEnd = strings.Length - 1;
+        int tween_int = tweenCore.Create(stringIndexStart, stringIndexEnd, duration, EasingType.Random, true);
+        tweenCore.OnUpdate(tween_int, (int index) => {
+            if (index < 0 || index >= strings.Length) {
+                Debug.LogError("Index out of bounds: " + index);
+                return;
+            }
+            // text.text = strings[index];
+            textIndex = index;
+        });
+        tweenCore.Play(tween_int);
     }
 
     void Update() {
         tweenCore.Tick(Time.deltaTime);
+        text.text = strings[textIndex];
     }
 
     void OnApplicationQuit() {
