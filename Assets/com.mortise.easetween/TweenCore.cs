@@ -6,36 +6,59 @@ using Unity.Jobs;
 using UnityEngine;
 
 public sealed class TweenCore : IDisposable {
+    int tweenCount;
+    int nextId;
+
     NativeArray<TweenModel> activeTweens;
-    int tweenCount = 0;
-    int nextId = 1;
+    Dictionary<int, int> idToIndex;
+    Queue<int> freeIndices;
 
-    Dictionary<int, int> idToIndex = new Dictionary<int, int>();
-    Queue<int> freeIndices = new Queue<int>();
+    Dictionary<int, Action<float>> floatUpdateCallbacks;
+    Dictionary<int, Action<Vector3>> vector3UpdateCallbacks;
+    Dictionary<int, Action<Vector2>> vector2UpdateCallbacks;
+    Dictionary<int, Action<Color>> colorUpdateCallbacks;
+    Dictionary<int, Action<Color32>> color32UpdateCallbacks;
+    Dictionary<int, Action<Quaternion>> quaternionUpdateCallbacks;
+    Dictionary<int, Action<int>> intUpdateCallbacks;
+    Dictionary<int, Action> waitUpdateCallbacks;
 
-    Dictionary<int, Action<float>> floatUpdateCallbacks = new Dictionary<int, Action<float>>();
-    Dictionary<int, Action<Vector3>> vector3UpdateCallbacks = new Dictionary<int, Action<Vector3>>();
-    Dictionary<int, Action<Vector2>> vector2UpdateCallbacks = new Dictionary<int, Action<Vector2>>();
-    Dictionary<int, Action<Color>> colorUpdateCallbacks = new Dictionary<int, Action<Color>>();
-    Dictionary<int, Action<Color32>> color32UpdateCallbacks = new Dictionary<int, Action<Color32>>();
-    Dictionary<int, Action<Quaternion>> quaternionUpdateCallbacks = new Dictionary<int, Action<Quaternion>>();
-    Dictionary<int, Action<int>> intUpdateCallbacks = new Dictionary<int, Action<int>>();
-    Dictionary<int, Action> waitUpdateCallbacks = new Dictionary<int, Action>();
-
-    Dictionary<int, Action<float>> floatCompleteCallbacks = new Dictionary<int, Action<float>>();
-    Dictionary<int, Action<Vector3>> vector3CompleteCallbacks = new Dictionary<int, Action<Vector3>>();
-    Dictionary<int, Action<Vector2>> vector2CompleteCallbacks = new Dictionary<int, Action<Vector2>>();
-    Dictionary<int, Action<Color>> colorCompleteCallbacks = new Dictionary<int, Action<Color>>();
-    Dictionary<int, Action<Color32>> color32CompleteCallbacks = new Dictionary<int, Action<Color32>>();
-    Dictionary<int, Action<Quaternion>> quaternionCompleteCallbacks = new Dictionary<int, Action<Quaternion>>();
-    Dictionary<int, Action<int>> intCompleteCallbacks = new Dictionary<int, Action<int>>();
-    Dictionary<int, Action> waitCompleteCallbacks = new Dictionary<int, Action>();
+    Dictionary<int, Action<float>> floatCompleteCallbacks;
+    Dictionary<int, Action<Vector3>> vector3CompleteCallbacks;
+    Dictionary<int, Action<Vector2>> vector2CompleteCallbacks;
+    Dictionary<int, Action<Color>> colorCompleteCallbacks;
+    Dictionary<int, Action<Color32>> color32CompleteCallbacks;
+    Dictionary<int, Action<Quaternion>> quaternionCompleteCallbacks;
+    Dictionary<int, Action<int>> intCompleteCallbacks;
+    Dictionary<int, Action> waitCompleteCallbacks;
 
     public TweenCore(int capacity = 128) {
         activeTweens = new NativeArray<TweenModel>(capacity, Allocator.Persistent);
+        idToIndex = new Dictionary<int, int>();
+        freeIndices = new Queue<int>();
+
+        floatUpdateCallbacks = new Dictionary<int, Action<float>>();
+        vector3UpdateCallbacks = new Dictionary<int, Action<Vector3>>();
+        vector2UpdateCallbacks = new Dictionary<int, Action<Vector2>>();
+        colorUpdateCallbacks = new Dictionary<int, Action<Color>>();
+        color32UpdateCallbacks = new Dictionary<int, Action<Color32>>();
+        quaternionUpdateCallbacks = new Dictionary<int, Action<Quaternion>>();
+        intUpdateCallbacks = new Dictionary<int, Action<int>>();
+        waitUpdateCallbacks = new Dictionary<int, Action>();
+
+        floatCompleteCallbacks = new Dictionary<int, Action<float>>();
+        vector3CompleteCallbacks = new Dictionary<int, Action<Vector3>>();
+        vector2CompleteCallbacks = new Dictionary<int, Action<Vector2>>();
+        colorCompleteCallbacks = new Dictionary<int, Action<Color>>();
+        color32CompleteCallbacks = new Dictionary<int, Action<Color32>>();
+        quaternionCompleteCallbacks = new Dictionary<int, Action<Quaternion>>();
+        intCompleteCallbacks = new Dictionary<int, Action<int>>();
+        waitCompleteCallbacks = new Dictionary<int, Action>();
+
+        nextId = 1;
+        tweenCount = 0;
     }
 
-    #region 创建Tween
+    #region Create
     public int Create(float start, float end, float duration, EasingType easing, bool isLoop = false) {
         int id = nextId++;
         int index = AllocateIndex();
@@ -192,7 +215,7 @@ public sealed class TweenCore : IDisposable {
     }
     #endregion
 
-    #region 更新逻辑
+    #region Tick
     public void Tick(float deltaTime) {
         if (tweenCount == 0) return;
 
@@ -233,8 +256,10 @@ public sealed class TweenCore : IDisposable {
             activeTweens[i] = t;
         }
     }
+    #endregion
 
-    private void InvokeUpdateCallback(TweenModel t) {
+    #region Invoke
+    void InvokeUpdateCallback(TweenModel t) {
         switch (t.type) {
             case TweenType.Float:
                 if (floatUpdateCallbacks.TryGetValue(t.id, out var floatUpdate)) floatUpdate(t.floatValue);
@@ -263,7 +288,7 @@ public sealed class TweenCore : IDisposable {
         }
     }
 
-    private void InvokeCompleteCallback(TweenModel t) {
+    void InvokeCompleteCallback(TweenModel t) {
         switch (t.type) {
             case TweenType.Float:
                 if (floatCompleteCallbacks.TryGetValue(t.id, out var floatComplete)) floatComplete(t.floatValue);
@@ -293,7 +318,7 @@ public sealed class TweenCore : IDisposable {
     }
     #endregion
 
-    #region 回调注册
+    #region Binding
     public void OnUpdate(int tweenId, Action<float> callback) {
         AddCallback(floatUpdateCallbacks, tweenId, callback);
     }
@@ -367,7 +392,7 @@ public sealed class TweenCore : IDisposable {
     }
     #endregion
 
-    #region 内存管理
+    #region Context 
     int AllocateIndex() {
         if (freeIndices.Count > 0) return freeIndices.Dequeue();
 
@@ -437,7 +462,7 @@ public sealed class TweenCore : IDisposable {
     }
     #endregion
 
-    #region 控制方法
+    #region Play/Resume/Pause/Stop/Link
     public void Play(int tweenId) {
         if (idToIndex.TryGetValue(tweenId, out int index)) {
             TweenModel t = activeTweens[index];
@@ -445,6 +470,16 @@ public sealed class TweenCore : IDisposable {
             t.isComplete = false;
             t.elapsedTime = 0;
             activeTweens[index] = t;
+        }
+    }
+
+    public void Resume(int tweenId) {
+        if (idToIndex.TryGetValue(tweenId, out int index)) {
+            TweenModel t = activeTweens[index];
+            if (!t.isPlaying && !t.isComplete) {
+                t.isPlaying = true;
+                activeTweens[index] = t;
+            }
         }
     }
 

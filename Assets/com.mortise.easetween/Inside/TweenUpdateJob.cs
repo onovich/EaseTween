@@ -4,11 +4,11 @@ using Unity.Jobs;
 using UnityEngine;
 
 [BurstCompile]
-public struct TweenUpdateJob : IJobParallelFor {
-    public NativeArray<TweenModel> tweens;
-    public float deltaTime;
+internal struct TweenUpdateJob : IJobParallelFor {
+    internal NativeArray<TweenModel> tweens;
+    internal float deltaTime;
 
-    public void Execute(int index) {
+    void IJobParallelFor.Execute(int index) {
         TweenModel t = tweens[index];
         if (!t.isPlaying || t.isComplete) return;
 
