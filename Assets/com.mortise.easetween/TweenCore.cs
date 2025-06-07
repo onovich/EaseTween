@@ -171,18 +171,18 @@ public sealed class TweenCore : IDisposable {
         for (int i = 0; i < tweenCount; i++) {
             TweenModel t = activeTweens[i];
 
-            if ((t.flags & 0x2) != 0) // hasChanged
+            if ((t.flags & 0x2) != 0) // HasChanged
             {
-                t.flags &= 0xFD; // Clear hasChanged Flag
+                t.flags &= 0xFD; // Clear HasChanged Flag
 
                 if (updateCallbacks.TryGetValue(t.id, out Delegate updateDel)) {
                     InvokeCallback(updateDel, t);
                 }
             }
 
-            if ((t.flags & 0x1) != 0) // needsChainStart
+            if ((t.flags & 0x1) != 0) // NeedsChainStart
             {
-                t.flags &= 0xFE; // Clear needsChainStart Flag
+                t.flags &= 0xFE; // Clear NeedsChainStart Flag
                 if (t.nextId != -1 && idToIndex.TryGetValue(t.nextId, out int nextIndex)) {
                     TweenModel next = activeTweens[nextIndex];
                     next.isPlaying = true;

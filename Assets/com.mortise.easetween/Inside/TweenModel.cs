@@ -13,7 +13,7 @@ public struct TweenModel {
     [FieldOffset(8)] public float elapsedTime;
     [FieldOffset(12)] public float duration;
     [FieldOffset(16)] public EasingType easing;
-    [FieldOffset(17)] public byte flags; // 位标记: 0=needsChainStart, 1=needsCallback
+    [FieldOffset(17)] public byte flags; // 0 = NeedsChainStart, 1 = NeedsCallback
 
     // 当前值联合体 (16字节)
     [FieldOffset(20)] public float floatValue;

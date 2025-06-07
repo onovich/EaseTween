@@ -16,8 +16,7 @@ public struct TweenUpdateJob : IJobParallelFor {
         float time = t.elapsedTime;
         float duration = t.duration;
 
-        // 标记值已变化
-        t.flags |= 0x2; // 设置hasChanged标志
+        t.flags |= 0x2; // Set HasChanged Flag
 
         switch (t.type) {
             case TweenType.Float:
@@ -58,7 +57,7 @@ public struct TweenUpdateJob : IJobParallelFor {
         if (t.elapsedTime >= t.duration) {
             t.isComplete = true;
             if (t.nextId != -1 && !t.isLoop) {
-                t.flags |= 0x1; // 设置needsChainStart标志
+                t.flags |= 0x1; // Set NeedsChainStart Flag
             } else if (t.isLoop) {
                 t.elapsedTime = 0;
                 t.isComplete = false;

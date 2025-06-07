@@ -47,6 +47,10 @@ public class SampleMain : MonoBehaviour {
             currentPoint.GetComponent<SpriteRenderer>().color = color;
         });
 
+        tweenCore.OnComplete(tween_color_from_end_to_start, (Color color) => {
+            Debug.Log("Color Changed End");
+        });
+
         tweenCore.Link(tween_move_from_start_to_end, tween_scale_from_start_to_end);
         tweenCore.Link(tween_scale_from_start_to_end, tween_color_from_start_to_end);
         tweenCore.Link(tween_color_from_start_to_end, tween_move_from_end_to_start);
