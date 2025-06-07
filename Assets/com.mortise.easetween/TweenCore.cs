@@ -1,630 +1,417 @@
 using System;
 using System.Collections.Generic;
+using Unity.Collections;
 using UnityEngine;
+using Unity.Jobs;
+using Unity.Burst;
 
 public sealed class TweenCore : IDisposable {
-
-    SortedList<int, TweenModel> tweens;
-    Dictionary<int, TweenValueRangeModel> ranges;
-    Dictionary<int, TweenValueModel> values;
-    Dictionary<int, Action<float>> onCompleteCallbacks_float;
-    Dictionary<int, Action<float>> onUpdateCallbacks_float;
-    Dictionary<int, Action<Vector2>> onCompleteCallbacks_vector2;
-    Dictionary<int, Action<Vector2>> onUpdateCallbacks_vector2;
-    Dictionary<int, Action<Vector3>> onCompleteCallbacks_vector3;
-    Dictionary<int, Action<Vector3>> onUpdateCallbacks_vector3;
-    Dictionary<int, Action<Color>> onCompleteCallbacks_color;
-    Dictionary<int, Action<Color>> onUpdateCallbacks_color;
-    Dictionary<int, Action<Color32>> onCompleteCallbacks_color32;
-    Dictionary<int, Action<Color32>> onUpdateCallbacks_color32;
-    Dictionary<int, Action<Quaternion>> onCompleteCallbacks_quaternion;
-    Dictionary<int, Action<Quaternion>> onUpdateCallbacks_quaternion;
-    Dictionary<int, Action> onWaiteCompleteCallbacks;
+    NativeArray<TweenModel> activeTweens;
+    NativeArray<int> nextIdArray;
+    int tweenCount = 0;
+    Dictionary<int, int> idToIndex = new Dictionary<int, int>();
+    Queue<int> freeIndices = new Queue<int>();
     int nextId = 1;
 
-    public TweenCore() {
-        tweens = new SortedList<int, TweenModel>();
-        ranges = new Dictionary<int, TweenValueRangeModel>();
-        values = new Dictionary<int, TweenValueModel>();
-        onCompleteCallbacks_float = new Dictionary<int, Action<float>>();
-        onUpdateCallbacks_float = new Dictionary<int, Action<float>>();
-        onCompleteCallbacks_vector2 = new Dictionary<int, Action<Vector2>>();
-        onUpdateCallbacks_vector2 = new Dictionary<int, Action<Vector2>>();
-        onCompleteCallbacks_vector3 = new Dictionary<int, Action<Vector3>>();
-        onUpdateCallbacks_vector3 = new Dictionary<int, Action<Vector3>>();
-        onCompleteCallbacks_color = new Dictionary<int, Action<Color>>();
-        onUpdateCallbacks_color = new Dictionary<int, Action<Color>>();
-        onCompleteCallbacks_color32 = new Dictionary<int, Action<Color32>>();
-        onUpdateCallbacks_color32 = new Dictionary<int, Action<Color32>>();
-        onCompleteCallbacks_quaternion = new Dictionary<int, Action<Quaternion>>();
-        onUpdateCallbacks_quaternion = new Dictionary<int, Action<Quaternion>>();
-        onWaiteCompleteCallbacks = new Dictionary<int, Action>();
-        nextId = 1;
+    Dictionary<int, Delegate> updateCallbacks = new Dictionary<int, Delegate>();
+    Dictionary<int, Delegate> completeCallbacks = new Dictionary<int, Delegate>();
+
+    public TweenCore(int initialCapacity = 128) {
+        activeTweens = new NativeArray<TweenModel>(initialCapacity, Allocator.Persistent);
+        nextIdArray = new NativeArray<int>(initialCapacity, Allocator.Persistent);
+        for (int i = 0; i < initialCapacity; i++) {
+            nextIdArray[i] = -1;
+        }
     }
 
-    #region Create Tweens
+    #region Create
     public int Create(float start, float end, float duration, EasingType easing, bool isLoop = false) {
-        int id = AllocateTween(TweenType.Float, duration, easing, isLoop);
-        var range = new TweenValueRangeModel();
-        range.floatStart = start;
-        range.floatEnd = end;
-        ranges.Add(tweens[id].id, range);
-        var value = new TweenValueModel();
-        value.floatValue = start;
-        values.Add(tweens[id].id, value);
-        return id;
-    }
+        int id = nextId++;
+        int index = AllocateIndex();
 
-    public int Create(Vector2 start, Vector2 end, float duration, EasingType easing, bool isLoop = false) {
-        int id = AllocateTween(TweenType.Vector2, duration, easing, isLoop);
-        var range = new TweenValueRangeModel();
-        range.vector2Start = start;
-        range.vector2End = end;
-        ranges.Add(tweens[id].id, range);
-        var value = new TweenValueModel();
-        value.vector2Value = start;
-        values.Add(tweens[id].id, value);
+        TweenModel tween = activeTweens[index];
+        tween.id = id;
+        tween.type = TweenType.Float;
+        tween.floatStart = start;
+        tween.floatEnd = end;
+        tween.floatValue = start;
+        tween.duration = duration;
+        tween.easing = easing;
+        tween.isLoop = isLoop;
+        activeTweens[index] = tween;
+
+        idToIndex[id] = index;
         return id;
     }
 
     public int Create(Vector3 start, Vector3 end, float duration, EasingType easing, bool isLoop = false) {
-        int id = AllocateTween(TweenType.Vector3, duration, easing, isLoop);
-        var range = new TweenValueRangeModel();
-        range.vector3Start = start;
-        range.vector3End = end;
-        ranges.Add(tweens[id].id, range);
-        var value = new TweenValueModel();
-        value.vector3Value = start;
-        values.Add(tweens[id].id, value);
+        int id = nextId++;
+        int index = AllocateIndex();
+
+        TweenModel tween = activeTweens[index];
+        tween.id = id;
+        tween.type = TweenType.Vector3;
+        tween.vector3Start = start;
+        tween.vector3End = end;
+        tween.vector3Value = start;
+        tween.duration = duration;
+        tween.easing = easing;
+        tween.isLoop = isLoop;
+        activeTweens[index] = tween;
+
+        idToIndex[id] = index;
         return id;
     }
 
     public int Create(Color start, Color end, float duration, EasingType easing, bool isLoop = false) {
-        int id = AllocateTween(TweenType.Color, duration, easing, isLoop);
-        var range = new TweenValueRangeModel();
-        range.colorStart = start;
-        range.colorEnd = end;
-        ranges.Add(tweens[id].id, range);
-        var value = new TweenValueModel();
-        value.colorValue = start;
-        values.Add(tweens[id].id, value);
-        return id;
-    }
+        int id = nextId++;
+        int index = AllocateIndex();
 
-    public int Create(Color32 start, Color32 end, float duration, EasingType easing, bool isLoop = false) {
-        int id = AllocateTween(TweenType.Color32, duration, easing, isLoop);
-        var range = new TweenValueRangeModel();
-        range.color32Start = start;
-        range.color32End = end;
-        ranges.Add(tweens[id].id, range);
-        var value = new TweenValueModel();
-        value.color32Value = start;
-        values.Add(tweens[id].id, value);
+        TweenModel tween = activeTweens[index];
+        tween.id = id;
+        tween.type = TweenType.Color;
+        tween.colorStart = start;
+        tween.colorEnd = end;
+        tween.colorValue = start;
+        tween.duration = duration;
+        tween.easing = easing;
+        tween.isLoop = isLoop;
+        activeTweens[index] = tween;
+
+        idToIndex[id] = index;
         return id;
     }
 
     public int Create(Quaternion start, Quaternion end, float duration, EasingType easing, bool isLoop = false) {
-        int id = AllocateTween(TweenType.Quaternion, duration, easing, isLoop);
-        var range = new TweenValueRangeModel();
-        range.quaternionStart = start;
-        range.quaternionEnd = end;
-        ranges.Add(tweens[id].id, range);
-        var value = new TweenValueModel();
-        value.quaternionValue = start;
-        values.Add(tweens[id].id, value);
+        int id = nextId++;
+        int index = AllocateIndex();
+
+        TweenModel tween = activeTweens[index];
+        tween.id = id;
+        tween.type = TweenType.Quaternion;
+        tween.quaternionStart = start;
+        tween.quaternionEnd = end;
+        tween.quaternionValue = start;
+        tween.duration = duration;
+        tween.easing = easing;
+        tween.isLoop = isLoop;
+        activeTweens[index] = tween;
+
+        idToIndex[id] = index;
         return id;
     }
 
-    public int CreateTween_Wait(float duration, bool isLoop = false) {
-        return AllocateTween(TweenType.Wait, duration, EasingType.Linear, isLoop);
-    }
+    public int Create(Color32 start, Color32 end, float duration, EasingType easing, bool isLoop = false) {
+        int id = nextId++;
+        int index = AllocateIndex();
 
-    int AllocateTween(TweenType type, float duration, EasingType easing, bool isLoop) {
-        var model = new TweenModel();
+        TweenModel tween = activeTweens[index];
+        tween.id = id;
+        tween.type = TweenType.Color32;
+        tween.color32Start = start;
+        tween.color32End = end;
+        tween.color32Value = start;
+        tween.duration = duration;
+        tween.easing = easing;
+        tween.isLoop = isLoop;
+        activeTweens[index] = tween;
 
-        model.id = nextId++;
-        model.type = type;
-        model.duration = duration;
-        model.easing = easing;
-        model.isLoop = isLoop;
-        model.elapsedTime = 0;
-        model.isPlaying = false;
-        model.isComplete = false;
-        model.nextId = -1;
-
-        tweens.Add(model.id, model);
-
-        return model.id;
+        idToIndex[id] = index;
+        return id;
     }
     #endregion
 
-    #region Callbacks
-    public void OnComplete(int tweenId, Action<float> callback) {
-        if (onCompleteCallbacks_float.ContainsKey(tweenId)) {
-            onCompleteCallbacks_float[tweenId] += callback;
-        } else {
-            onCompleteCallbacks_float[tweenId] = callback;
+    #region Job
+    [BurstCompile]
+    struct TweenUpdateJob : IJobParallelFor {
+        public NativeArray<TweenModel> Tweens;
+        public NativeArray<int> NextIds;
+        public float DeltaTime;
+
+        public void Execute(int index) {
+            TweenModel t = Tweens[index];
+            if (!t.isPlaying || t.isComplete) return;
+
+            t.elapsedTime += DeltaTime;
+
+            switch (t.type) {
+                case TweenType.Float:
+                    t.floatValue = EasingFunction.Easing(t.easing, t.elapsedTime, t.floatStart, t.floatEnd - t.floatStart, t.duration);
+                    break;
+
+                case TweenType.Vector2:
+                    t.vector2Value.x = EasingFunction.Easing(t.easing, t.elapsedTime, t.vector2Start.x, t.vector2End.x - t.vector2Start.x, t.duration);
+                    t.vector2Value.y = EasingFunction.Easing(t.easing, t.elapsedTime, t.vector2Start.y, t.vector2End.y - t.vector2Start.y, t.duration);
+                    break;
+
+                case TweenType.Vector3:
+                    t.vector3Value.x = EasingFunction.Easing(t.easing, t.elapsedTime, t.vector3Start.x, t.vector3End.x - t.vector3Start.x, t.duration);
+                    t.vector3Value.y = EasingFunction.Easing(t.easing, t.elapsedTime, t.vector3Start.y, t.vector3End.y - t.vector3Start.y, t.duration);
+                    t.vector3Value.z = EasingFunction.Easing(t.easing, t.elapsedTime, t.vector3Start.z, t.vector3End.z - t.vector3Start.z, t.duration);
+                    break;
+
+                case TweenType.Color:
+                    t.colorValue.r = EasingFunction.Easing(t.easing, t.elapsedTime, t.colorStart.r, t.colorEnd.r - t.colorStart.r, t.duration);
+                    t.colorValue.g = EasingFunction.Easing(t.easing, t.elapsedTime, t.colorStart.g, t.colorEnd.g - t.colorStart.g, t.duration);
+                    t.colorValue.b = EasingFunction.Easing(t.easing, t.elapsedTime, t.colorStart.b, t.colorEnd.b - t.colorStart.b, t.duration);
+                    t.colorValue.a = EasingFunction.Easing(t.easing, t.elapsedTime, t.colorStart.a, t.colorEnd.a - t.colorStart.a, t.duration);
+                    break;
+
+                case TweenType.Color32:
+                    t.color32Value.r = (byte)Mathf.Clamp(EasingFunction.Easing(t.easing, t.elapsedTime, t.color32Start.r, t.color32End.r - t.color32Start.r, t.duration), 0, 255);
+                    t.color32Value.g = (byte)Mathf.Clamp(EasingFunction.Easing(t.easing, t.elapsedTime, t.color32Start.g, t.color32End.g - t.color32Start.g, t.duration), 0, 255);
+                    t.color32Value.b = (byte)Mathf.Clamp(EasingFunction.Easing(t.easing, t.elapsedTime, t.color32Start.b, t.color32End.b - t.color32Start.b, t.duration), 0, 255);
+                    t.color32Value.a = (byte)Mathf.Clamp(EasingFunction.Easing(t.easing, t.elapsedTime, t.color32Start.a, t.color32End.a - t.color32Start.a, t.duration), 0, 255);
+                    break;
+
+                case TweenType.Quaternion:
+                    t.quaternionValue.x = EasingFunction.Easing(t.easing, t.elapsedTime, t.quaternionStart.x, t.quaternionEnd.x - t.quaternionStart.x, t.duration);
+                    t.quaternionValue.y = EasingFunction.Easing(t.easing, t.elapsedTime, t.quaternionStart.y, t.quaternionEnd.y - t.quaternionStart.y, t.duration);
+                    t.quaternionValue.z = EasingFunction.Easing(t.easing, t.elapsedTime, t.quaternionStart.z, t.quaternionEnd.z - t.quaternionStart.z, t.duration);
+                    t.quaternionValue.w = EasingFunction.Easing(t.easing, t.elapsedTime, t.quaternionStart.w, t.quaternionEnd.w - t.quaternionStart.w, t.duration);
+                    t.quaternionValue = NormalizeQuaternion(t.quaternionValue);
+                    break;
+
+                case TweenType.Wait:
+                    break;
+
+            }
+
+            if (t.elapsedTime >= t.duration) {
+                t.isComplete = true;
+                int nextId = NextIds[index]; // 获取链式目标
+
+                if (nextId != -1 && !t.isLoop) {
+                    t.shouldStartNext = true;
+                } else if (t.isLoop) {
+                    ResetTween(ref t);
+                }
+            }
+
+            Tweens[index] = t;
+        }
+
+        Quaternion NormalizeQuaternion(Quaternion q) {
+            float mag = Mathf.Sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
+            if (mag > 0) {
+                q.x /= mag;
+                q.y /= mag;
+                q.z /= mag;
+                q.w /= mag;
+            }
+            return q;
+        }
+
+        void ResetTween(ref TweenModel t) {
+            t.elapsedTime = 0;
+            t.isComplete = false;
+            switch (t.type) {
+                case TweenType.Float: t.floatValue = t.floatStart; break;
+                case TweenType.Vector3: t.vector3Value = t.vector3Start; break;
+                case TweenType.Vector2: t.vector2Value = t.vector2Start; break;
+                case TweenType.Quaternion: t.quaternionValue = t.quaternionStart; break;
+                case TweenType.Color32: t.color32Value = t.color32Start; break;
+                case TweenType.Color: t.colorValue = t.colorStart; break;
+                case TweenType.Wait: break;
+            }
         }
     }
 
-    public void OnUpdate(int tweenId, Action<float> callback) {
-        if (onUpdateCallbacks_float.ContainsKey(tweenId)) {
-            onUpdateCallbacks_float[tweenId] += callback;
-        } else {
-            onUpdateCallbacks_float[tweenId] = callback;
+    #region Tick
+    public void Tick(float deltaTime) {
+        if (tweenCount == 0) return;
+
+        var job = new TweenUpdateJob {
+            Tweens = activeTweens.GetSubArray(0, tweenCount),
+            NextIds = nextIdArray,
+            DeltaTime = deltaTime
+        };
+
+        JobHandle handle = job.Schedule(tweenCount, 32);
+        handle.Complete();
+
+        // 处理完成状态和链式调用
+        for (int i = 0; i < tweenCount; i++) {
+            TweenModel t = activeTweens[i];
+            if (t.shouldStartNext) {
+                t.shouldStartNext = false;
+                int nextId = nextIdArray[i];
+                if (idToIndex.TryGetValue(nextId, out int nextIndex)) {
+                    TweenModel next = activeTweens[nextIndex];
+                    next.isPlaying = true;
+                    next.elapsedTime = 0f;
+                    next.isComplete = false;
+                    activeTweens[nextIndex] = next;
+                }
+            }
+            activeTweens[i] = t;
+        }
+
+        ProcessCallbacks();
+    }
+    #endregion
+
+    void ProcessCallbacks() {
+        for (int i = 0; i < tweenCount; i++) {
+            TweenModel t = activeTweens[i];
+            if (!t.isPlaying) continue;
+
+            if (updateCallbacks.TryGetValue(t.id, out Delegate updateDel)) {
+                InvokeCallback(updateDel, ref t);
+            }
+
+            if (t.isComplete && completeCallbacks.TryGetValue(t.id, out Delegate completeDel)) {
+                InvokeCallback(completeDel, ref t);
+                if (!t.isLoop) RemoveCallback(t.id);
+            }
+            activeTweens[i] = t;
         }
     }
 
-    public void OnComplete(int tweenId, Action<Vector2> callback) {
-        if (onCompleteCallbacks_vector2.ContainsKey(tweenId)) {
-            onCompleteCallbacks_vector2[tweenId] += callback;
+    void InvokeCallback(Delegate callback, ref TweenModel t) {
+        switch (t.type) {
+            case TweenType.Float:
+                (callback as Action<float>)?.Invoke(t.floatValue);
+                break;
+            case TweenType.Vector3:
+                (callback as Action<Vector3>)?.Invoke(t.vector3Value);
+                break;
+        }
+    }
+    #endregion
+
+    #region 回调注册
+    public void OnUpdate<T>(int tweenId, Action<T> callback) where T : struct {
+        if (updateCallbacks.TryGetValue(tweenId, out var existing)) {
+            updateCallbacks[tweenId] = (Action<T>)existing + callback;
         } else {
-            onCompleteCallbacks_vector2[tweenId] = callback;
+            updateCallbacks[tweenId] = callback;
         }
     }
 
-    public void OnUpdate(int tweenId, Action<Vector2> callback) {
-        if (onUpdateCallbacks_vector2.ContainsKey(tweenId)) {
-            onUpdateCallbacks_vector2[tweenId] += callback;
+    public void OnComplete<T>(int tweenId, Action<T> callback) where T : struct {
+        if (completeCallbacks.TryGetValue(tweenId, out var existing)) {
+            completeCallbacks[tweenId] = (Action<T>)existing + callback;
         } else {
-            onUpdateCallbacks_vector2[tweenId] = callback;
-        }
-    }
-
-    public void OnComplete(int tweenId, Action<Vector3> callback) {
-        if (onCompleteCallbacks_vector3.ContainsKey(tweenId)) {
-            onCompleteCallbacks_vector3[tweenId] += callback;
-        } else {
-            onCompleteCallbacks_vector3[tweenId] = callback;
-        }
-    }
-
-    public void OnUpdate(int tweenId, Action<Vector3> callback) {
-        if (onUpdateCallbacks_vector3.ContainsKey(tweenId)) {
-            onUpdateCallbacks_vector3[tweenId] += callback;
-        } else {
-            onUpdateCallbacks_vector3[tweenId] = callback;
-        }
-    }
-
-    public void OnComplete(int tweenId, Action<Color> callback) {
-        if (onCompleteCallbacks_color.ContainsKey(tweenId)) {
-            onCompleteCallbacks_color[tweenId] += callback;
-        } else {
-            onCompleteCallbacks_color[tweenId] = callback;
-        }
-    }
-
-    public void OnUpdate(int tweenId, Action<Color> callback) {
-        if (onUpdateCallbacks_color.ContainsKey(tweenId)) {
-            onUpdateCallbacks_color[tweenId] += callback;
-        } else {
-            onUpdateCallbacks_color[tweenId] = callback;
-        }
-    }
-
-    public void OnComplete(int tweenId, Action<Color32> callback) {
-        if (onCompleteCallbacks_color32.ContainsKey(tweenId)) {
-            onCompleteCallbacks_color32[tweenId] += callback;
-        } else {
-            onCompleteCallbacks_color32[tweenId] = callback;
-        }
-    }
-
-    public void OnUpdate(int tweenId, Action<Color32> callback) {
-        if (onUpdateCallbacks_color32.ContainsKey(tweenId)) {
-            onUpdateCallbacks_color32[tweenId] += callback;
-        } else {
-            onUpdateCallbacks_color32[tweenId] = callback;
-        }
-    }
-
-    public void OnComplete(int tweenId, Action<Quaternion> callback) {
-        if (onCompleteCallbacks_quaternion.ContainsKey(tweenId)) {
-            onCompleteCallbacks_quaternion[tweenId] += callback;
-        } else {
-            onCompleteCallbacks_quaternion[tweenId] = callback;
-        }
-    }
-
-    public void OnUpdate(int tweenId, Action<Quaternion> callback) {
-        if (onUpdateCallbacks_quaternion.ContainsKey(tweenId)) {
-            onUpdateCallbacks_quaternion[tweenId] += callback;
-        } else {
-            onUpdateCallbacks_quaternion[tweenId] = callback;
+            completeCallbacks[tweenId] = callback;
         }
     }
 
     public void OnWaitComplete(int tweenId, Action callback) {
-        if (onWaiteCompleteCallbacks.ContainsKey(tweenId)) {
-            onWaiteCompleteCallbacks[tweenId] += callback;
-        } else {
-            onWaiteCompleteCallbacks[tweenId] = callback;
-        }
+        OnComplete<int>(tweenId, _ => callback());
+    }
+    #endregion
+
+    #region 状态查询
+    public bool IsPlaying(int id) {
+        return idToIndex.TryGetValue(id, out int index) && activeTweens[index].isPlaying;
     }
 
-    void OnComplete(int tweenId) {
-        var tween = tweens[tweenId];
-        var type = tween.type;
-        switch (type) {
-            case TweenType.Float:
-                if (onCompleteCallbacks_float.TryGetValue(tweenId, out var callback_float)) {
-                    callback_float?.Invoke(values[tweenId].floatValue);
-                }
-                break;
-            case TweenType.Vector2:
-                if (onCompleteCallbacks_vector2.TryGetValue(tweenId, out var callback_vector2)) {
-                    callback_vector2?.Invoke(values[tweenId].vector2Value);
-                }
-                break;
-            case TweenType.Vector3:
-                if (onCompleteCallbacks_vector3.TryGetValue(tweenId, out var callback_vector3)) {
-                    callback_vector3?.Invoke(values[tweenId].vector3Value);
-                }
-                break;
-            case TweenType.Color:
-                if (onCompleteCallbacks_color.TryGetValue(tweenId, out var callback_color)) {
-                    callback_color?.Invoke(values[tweenId].colorValue);
-                }
-                break;
-            case TweenType.Color32:
-
-                if (onCompleteCallbacks_color32.TryGetValue(tweenId, out var callback_color32)) {
-                    callback_color32?.Invoke(values[tweenId].color32Value);
-                }
-                break;
-            case TweenType.Quaternion:
-                if (onCompleteCallbacks_quaternion.TryGetValue(tweenId, out var callback_quaternion)) {
-                    callback_quaternion?.Invoke(values[tweenId].quaternionValue);
-                }
-                break;
-            case TweenType.Wait:
-                if (onWaiteCompleteCallbacks.TryGetValue(tweenId, out var callback_wait)) {
-                    callback_wait?.Invoke();
-                }
-                break;
-            default:
-                Debug.LogWarning($"Unsupported tween type: {type}");
-                break;
-        }
+    public bool IsComplete(int id) {
+        return idToIndex.TryGetValue(id, out int index) && activeTweens[index].isComplete;
     }
 
-    void OnUpdate(int tweenId) {
-        var tween = tweens[tweenId];
-        var type = tween.type;
-        switch (type) {
-            case TweenType.Float:
-                if (onUpdateCallbacks_float.TryGetValue(tweenId, out var callback_float)) {
-                    callback_float?.Invoke(values[tweenId].floatValue);
-                }
-                break;
-            case TweenType.Vector2:
-                if (onUpdateCallbacks_vector2.TryGetValue(tweenId, out var callback_vector2)) {
-                    callback_vector2?.Invoke(values[tweenId].vector2Value);
-                }
-                break;
-            case TweenType.Vector3:
-                if (onUpdateCallbacks_vector3.TryGetValue(tweenId, out var callback_vector3)) {
-                    callback_vector3?.Invoke(values[tweenId].vector3Value);
-                }
-                break;
-            case TweenType.Color:
-                if (onUpdateCallbacks_color.TryGetValue(tweenId, out var callback_color)) {
-                    callback_color?.Invoke(values[tweenId].colorValue);
-                }
-                break;
-            case TweenType.Color32:
-                if (onUpdateCallbacks_color32.TryGetValue(tweenId, out var callback_color32)) {
-                    callback_color32?.Invoke(values[tweenId].color32Value);
-                }
-                break;
-            case TweenType.Quaternion:
-                if (onUpdateCallbacks_quaternion.TryGetValue(tweenId, out var callback_quaternion)) {
-                    callback_quaternion?.Invoke(values[tweenId].quaternionValue);
-                }
-                break;
-            case TweenType.Wait:
-                break;
-            default:
-                Debug.LogWarning($"Unsupported tween type: {type}");
-                break;
+    public float GetProgress(int id) {
+        if (idToIndex.TryGetValue(id, out int index)) {
+            TweenModel t = activeTweens[index];
+            return Mathf.Clamp01(t.elapsedTime / t.duration);
+        }
+        return 0f;
+    }
+    #endregion
+
+    #region Link
+    public void Link(int fromId, int toId) {
+        if (idToIndex.TryGetValue(fromId, out int fromIndex) &&
+        idToIndex.TryGetValue(toId, out int _)) {
+            nextIdArray[fromIndex] = toId;
         }
     }
     #endregion
 
-    #region Tick
-    public void Tick(float deltaTime) {
-        for (int i = 0; i < tweens.Values.Count; i++) {
-            var tween = tweens.Values[i];
-            int id = tween.id;
-
-            if (!tween.isPlaying) continue;
-
-            tween.elapsedTime += deltaTime;
-
-            // 处理更新
-            if (tween.elapsedTime >= tween.duration) {
-                tween.elapsedTime = tween.duration;
-                tween.isPlaying = false;
-                tween.isComplete = true;
-
-                // 触发完成回调
-                OnComplete(id);
-
-                if (tween.isLoop) {
-                    Restart(id);
-                } else if (tween.nextId != -1) {
-                    Play(tween.nextId);
-                }
-            } else {
-                // 触发更新回调
-                OnUpdate(id);
-
-                // 计算当前值
-                switch (tween.type) {
-                    case TweenType.Float:
-                        UpdateFloat(id);
-                        break;
-                    case TweenType.Vector2:
-                        UpdateVector2(id);
-                        break;
-                    case TweenType.Vector3:
-                        UpdateVector3(id);
-                        break;
-                    case TweenType.Color:
-                        UpdateColor(id);
-                        break;
-                    case TweenType.Color32:
-                        UpdateColor32(id);
-                        break;
-                    case TweenType.Quaternion:
-                        UpdateQuaternion(id);
-                        break;
-                    case TweenType.Wait:
-                        break;
-                }
-            }
-            tweens[i] = tween;
-        }
-    }
-    #endregion
-
-    #region Update Tweens
-    void UpdateFloat(int id) {
-        var tween = tweens[id];
-        var range = ranges[id];
-        var value = values[id];
-
-        value.floatValue = EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.floatStart,
-            range.floatEnd - range.floatStart,
-            tween.duration);
-
-        values[id] = value;
-    }
-
-    void UpdateVector2(int id) {
-        var tween = tweens[id];
-        var range = ranges[id];
-        var value = values[id];
-
-        value.vector2Value.x = EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.vector2Start.x,
-            range.vector2End.x - range.vector2Start.x,
-            tween.duration);
-        value.vector2Value.y = EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.vector2Start.y,
-            range.vector2End.y - range.vector2Start.y,
-            tween.duration);
-
-        values[id] = value;
-    }
-
-    void UpdateVector3(int id) {
-        var tween = tweens[id];
-        var range = ranges[id];
-        var value = values[id];
-
-        value.vector3Value.x = EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.vector3Start.x,
-            range.vector3End.x - range.vector3Start.x,
-            tween.duration);
-        value.vector3Value.y = EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.vector3Start.y,
-            range.vector3End.y - range.vector3Start.y,
-            tween.duration);
-        value.vector3Value.z = EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.vector3Start.z,
-            range.vector3End.z - range.vector3Start.z,
-            tween.duration);
-
-        values[id] = value;
-    }
-
-    void UpdateColor(int id) {
-        var tween = tweens[id];
-        var range = ranges[id];
-        var value = values[id];
-
-        value.colorValue.r = EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.colorStart.r,
-            range.colorEnd.r - range.colorStart.r,
-            tween.duration);
-        value.colorValue.g = EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.colorStart.g,
-            range.colorEnd.g - range.colorStart.g,
-            tween.duration);
-        value.colorValue.b = EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.colorStart.b,
-            range.colorEnd.b - range.colorStart.b,
-            tween.duration);
-        value.colorValue.a = EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.colorStart.a,
-            range.colorEnd.a - range.colorStart.a,
-            tween.duration);
-
-        values[id] = value;
-    }
-
-    void UpdateColor32(int id) {
-        var tween = tweens[id];
-        var range = ranges[id];
-        var value = values[id];
-
-        value.color32Value.r = (byte)EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.color32Start.r,
-            range.color32End.r - range.color32Start.r,
-            tween.duration);
-        value.color32Value.g = (byte)EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.color32Start.g,
-            range.color32End.g - range.color32Start.g,
-            tween.duration);
-        value.color32Value.b = (byte)EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.color32Start.b,
-            range.color32End.b - range.color32Start.b,
-            tween.duration);
-        value.color32Value.a = (byte)EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.color32Start.a,
-            range.color32End.a - range.color32Start.a,
-            tween.duration);
-
-        values[id] = value;
-    }
-
-    void UpdateQuaternion(int id) {
-        var tween = tweens[id];
-        var range = ranges[id];
-        var value = values[id];
-
-        value.quaternionValue.x = EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.quaternionStart.x,
-            range.quaternionEnd.x - range.quaternionStart.x,
-            tween.duration);
-        value.quaternionValue.y = EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.quaternionStart.y,
-            range.quaternionEnd.y - range.quaternionStart.y,
-            tween.duration);
-        value.quaternionValue.z = EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.quaternionStart.z,
-            range.quaternionEnd.z - range.quaternionStart.z,
-            tween.duration);
-        value.quaternionValue.w = EasingFunction.GetEasingFunction(tween.easing)(
-            tween.elapsedTime,
-            range.quaternionStart.w,
-            range.quaternionEnd.w - range.quaternionStart.w,
-            tween.duration);
-
-        values[id] = value;
-    }
-    #endregion
-
-    #region Control Tweens
-    public void Stop(int id) {
-        var tween = tweens[id];
-        tween.isPlaying = false;
-        tween.isComplete = true;
-        tweens[id] = tween;
-    }
-
-    void Restart(int id) {
-        var tween = tweens[id];
-        tween.elapsedTime = 0f;
-        tween.isPlaying = true;
-        tween.isComplete = false;
-        tweens[id] = tween;
-    }
-
+    #region Play/Pause/Stop
     public void Play(int id) {
-        var tween = tweens[id];
-        if (tween.isPlaying) return;
-        tween.isPlaying = true;
-        tween.elapsedTime = 0f;
-        tween.isComplete = false;
-        tweens[id] = tween;
+        if (idToIndex.TryGetValue(id, out int index)) {
+            TweenModel tween = activeTweens[index];
+            tween.isPlaying = true;
+            tween.isComplete = false;
+            tween.elapsedTime = 0;
+            activeTweens[index] = tween;
+        } else {
+            Debug.LogWarning($"Tween with ID {id} does not exist.");
+        }
     }
 
     public void Pause(int id) {
-        var tween = tweens[id];
-        tween.isPlaying = false;
-        tweens[id] = tween;
+        if (idToIndex.TryGetValue(id, out int index)) {
+            TweenModel tween = activeTweens[index];
+            tween.isPlaying = false;
+            activeTweens[index] = tween;
+        } else {
+            Debug.LogWarning($"Tween with ID {id} does not exist.");
+        }
     }
 
-    public void Resume(int id) {
-        var tween = tweens[id];
-        if (tween.isPlaying) return;
-        tween.isPlaying = true;
-        tweens[id] = tween;
+    public void Stop(int id) {
+        if (idToIndex.TryGetValue(id, out int index)) {
+            TweenModel tween = activeTweens[index];
+            tween.isPlaying = false;
+            tween.isComplete = true;
+            tween.elapsedTime = 0;
+            activeTweens[index] = tween;
+        } else {
+            Debug.LogWarning($"Tween with ID {id} does not exist.");
+        }
+    }
+
+    public void StopAll() {
+        for (int i = 0; i < tweenCount; i++) {
+            TweenModel tween = activeTweens[i];
+            tween.isPlaying = false;
+            tween.isComplete = true;
+            tween.elapsedTime = 0;
+            activeTweens[i] = tween;
+        }
     }
     #endregion
 
-    #region Linking Tweens
-    public void Link(int fromId, int toId) {
-        if (!tweens.ContainsKey(fromId) || !tweens.ContainsKey(toId)) return;
+    #region 内存管理
+    int AllocateIndex() {
+        if (freeIndices.Count > 0) return freeIndices.Dequeue();
 
-        var fromTween = tweens[fromId];
-        fromTween.nextId = toId;
-        tweens[fromId] = fromTween;
+        if (tweenCount >= activeTweens.Length) {
+            int newSize = activeTweens.Length * 2;
+            var newArray = new NativeArray<TweenModel>(newSize, Allocator.Persistent);
+            NativeArray<TweenModel>.Copy(activeTweens, newArray, activeTweens.Length);
+            activeTweens.Dispose();
+            activeTweens = newArray;
+        }
+
+        return tweenCount++;
     }
 
-    public void Unlink(int fromId) {
-        if (!tweens.ContainsKey(fromId)) return;
+    public void Remove(int id) {
+        if (!idToIndex.TryGetValue(id, out int index)) return;
 
-        var fromTween = tweens[fromId];
-        fromTween.nextId = -1;
-        tweens[fromId] = fromTween;
+        activeTweens[index] = default;
+        freeIndices.Enqueue(index);
+        idToIndex.Remove(id);
+        RemoveCallback(id);
+    }
+
+    void RemoveCallback(int id) {
+        updateCallbacks.Remove(id);
+        completeCallbacks.Remove(id);
     }
     #endregion
 
     public void Dispose() {
-        tweens.Clear();
-        ranges.Clear();
-        values.Clear();
-        onCompleteCallbacks_float.Clear();
-        onUpdateCallbacks_float.Clear();
-        onCompleteCallbacks_vector2.Clear();
-        onUpdateCallbacks_vector2.Clear();
-        onCompleteCallbacks_vector3.Clear();
-        onUpdateCallbacks_vector3.Clear();
-        onCompleteCallbacks_color.Clear();
-        onUpdateCallbacks_color.Clear();
-        onCompleteCallbacks_color32.Clear();
-        onUpdateCallbacks_color32.Clear();
-        onCompleteCallbacks_quaternion.Clear();
-        onUpdateCallbacks_quaternion.Clear();
-        onWaiteCompleteCallbacks.Clear();
-        tweens = null;
-        ranges = null;
-        values = null;
-        onCompleteCallbacks_float = null;
-        onUpdateCallbacks_float = null;
-        onCompleteCallbacks_vector2 = null;
-        onUpdateCallbacks_vector2 = null;
-        onCompleteCallbacks_vector3 = null;
-        onUpdateCallbacks_vector3 = null;
-        onCompleteCallbacks_color = null;
-        onUpdateCallbacks_color = null;
-        onCompleteCallbacks_color32 = null;
-        onUpdateCallbacks_color32 = null;
-        onCompleteCallbacks_quaternion = null;
-        onUpdateCallbacks_quaternion = null;
-        onWaiteCompleteCallbacks = null;
-        nextId = 1;
+        if (activeTweens.IsCreated) {
+            activeTweens.Dispose();
+        }
+        idToIndex.Clear();
+        freeIndices.Clear();
+        updateCallbacks.Clear();
+        completeCallbacks.Clear();
     }
 }

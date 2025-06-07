@@ -1,4 +1,4 @@
-public enum EasingType {
+public enum EasingType : byte {
     None,
     Linear,
     SineIn,

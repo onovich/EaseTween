@@ -3,101 +3,101 @@ using UnityEngine;
 
 internal static class EasingFunction {
 
-    internal static Func<float, float, float, float, float> GetEasingFunction(EasingType mode) {
+    internal static float Easing(EasingType mode, float t, float b, float c, float d) {
         if (mode == EasingType.Linear) {
-            return Linear;
+            return Linear(t, b, c, d);
         }
         if (mode == EasingType.SineIn) {
-            return SineIn;
+            return SineIn(t, b, c, d);
         }
         if (mode == EasingType.SineOut) {
-            return SineOut;
+            return SineOut(t, b, c, d);
         }
         if (mode == EasingType.SineInOut) {
-            return SineInOut;
+            return SineInOut(t, b, c, d);
         }
         if (mode == EasingType.QuadIn) {
-            return QuadIn;
+            return QuadIn(t, b, c, d);
         }
         if (mode == EasingType.QuadOut) {
-            return QuadOut;
+            return QuadOut(t, b, c, d);
         }
         if (mode == EasingType.QuadInOut) {
-            return QuadInOut;
+            return QuadInOut(t, b, c, d);
         }
         if (mode == EasingType.CubicIn) {
-            return CubicIn;
+            return CubicIn(t, b, c, d);
         }
         if (mode == EasingType.CubicOut) {
-            return CubicOut;
+            return CubicOut(t, b, c, d);
         }
         if (mode == EasingType.CubicInOut) {
-            return CubicInOut;
+            return CubicInOut(t, b, c, d);
         }
         if (mode == EasingType.QuartIn) {
-            return QuartIn;
+            return QuartIn(t, b, c, d);
         }
         if (mode == EasingType.QuartOut) {
-            return QuartOut;
+            return QuartOut(t, b, c, d);
         }
         if (mode == EasingType.QuartInOut) {
-            return QuartInOut;
+            return QuartInOut(t, b, c, d);
         }
         if (mode == EasingType.QuintIn) {
-            return QuintIn;
+            return QuintIn(t, b, c, d);
         }
         if (mode == EasingType.QuintOut) {
-            return QuintOut;
+            return QuintOut(t, b, c, d);
         }
         if (mode == EasingType.QuintInOut) {
-            return QuintInOut;
+            return QuintInOut(t, b, c, d);
         }
         if (mode == EasingType.ExpoIn) {
-            return ExpoIn;
+            return ExpoIn(t, b, c, d);
         }
         if (mode == EasingType.ExpoOut) {
-            return ExpoOut;
+            return ExpoOut(t, b, c, d);
         }
         if (mode == EasingType.ExpoInOut) {
-            return ExpoInOut;
+            return ExpoInOut(t, b, c, d);
         }
         if (mode == EasingType.CircIn) {
-            return CircIn;
+            return CircIn(t, b, c, d);
         }
         if (mode == EasingType.CircOut) {
-            return CircOut;
+            return CircOut(t, b, c, d);
         }
         if (mode == EasingType.CircInOut) {
-            return CircInOut;
+            return CircInOut(t, b, c, d);
         }
         if (mode == EasingType.BackIn) {
-            return BackIn;
+            return BackIn(t, b, c, d);
         }
         if (mode == EasingType.BackOut) {
-            return BackOut;
+            return BackOut(t, b, c, d);
         }
         if (mode == EasingType.BackInOut) {
-            return BackInOut;
+            return BackInOut(t, b, c, d);
         }
         if (mode == EasingType.ElasticIn) {
-            return ElasticIn;
+            return ElasticIn(t, b, c, d);
         }
         if (mode == EasingType.ElasticOut) {
-            return ElasticOut;
+            return ElasticOut(t, b, c, d);
         }
         if (mode == EasingType.ElasticInOut) {
-            return ElasticInOut;
+            return ElasticInOut(t, b, c, d);
         }
         if (mode == EasingType.BounceIn) {
-            return BounceIn;
+            return BounceIn(t, b, c, d);
         }
         if (mode == EasingType.BounceOut) {
-            return BounceOut;
+            return BounceOut(t, b, c, d);
         }
         if (mode == EasingType.BounceInOut) {
-            return BounceInOut;
+            return BounceInOut(t, b, c, d);
         }
-        return Linear;
+        return Linear(t, b, c, d);
     }
 
     static float Linear(float t, float b, float c, float d) {
