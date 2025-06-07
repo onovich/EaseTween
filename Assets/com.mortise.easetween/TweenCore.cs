@@ -1,19 +1,35 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
 
 public sealed class TweenCore : IDisposable {
-    private NativeArray<TweenModel> activeTweens;
-    private int tweenCount = 0;
-    private int nextId = 1;
+    NativeArray<TweenModel> activeTweens;
+    int tweenCount = 0;
+    int nextId = 1;
 
-    private Dictionary<int, int> idToIndex = new Dictionary<int, int>();
-    private Queue<int> freeIndices = new Queue<int>();
+    Dictionary<int, int> idToIndex = new Dictionary<int, int>();
+    Queue<int> freeIndices = new Queue<int>();
 
-    private Dictionary<int, Delegate> updateCallbacks = new Dictionary<int, Delegate>();
-    private Dictionary<int, Delegate> completeCallbacks = new Dictionary<int, Delegate>();
+    Dictionary<int, Action<float>> floatUpdateCallbacks = new Dictionary<int, Action<float>>();
+    Dictionary<int, Action<Vector3>> vector3UpdateCallbacks = new Dictionary<int, Action<Vector3>>();
+    Dictionary<int, Action<Vector2>> vector2UpdateCallbacks = new Dictionary<int, Action<Vector2>>();
+    Dictionary<int, Action<Color>> colorUpdateCallbacks = new Dictionary<int, Action<Color>>();
+    Dictionary<int, Action<Color32>> color32UpdateCallbacks = new Dictionary<int, Action<Color32>>();
+    Dictionary<int, Action<Quaternion>> quaternionUpdateCallbacks = new Dictionary<int, Action<Quaternion>>();
+    Dictionary<int, Action<int>> intUpdateCallbacks = new Dictionary<int, Action<int>>();
+    Dictionary<int, Action> waitUpdateCallbacks = new Dictionary<int, Action>();
+
+    Dictionary<int, Action<float>> floatCompleteCallbacks = new Dictionary<int, Action<float>>();
+    Dictionary<int, Action<Vector3>> vector3CompleteCallbacks = new Dictionary<int, Action<Vector3>>();
+    Dictionary<int, Action<Vector2>> vector2CompleteCallbacks = new Dictionary<int, Action<Vector2>>();
+    Dictionary<int, Action<Color>> colorCompleteCallbacks = new Dictionary<int, Action<Color>>();
+    Dictionary<int, Action<Color32>> color32CompleteCallbacks = new Dictionary<int, Action<Color32>>();
+    Dictionary<int, Action<Quaternion>> quaternionCompleteCallbacks = new Dictionary<int, Action<Quaternion>>();
+    Dictionary<int, Action<int>> intCompleteCallbacks = new Dictionary<int, Action<int>>();
+    Dictionary<int, Action> waitCompleteCallbacks = new Dictionary<int, Action>();
 
     public TweenCore(int capacity = 128) {
         activeTweens = new NativeArray<TweenModel>(capacity, Allocator.Persistent);
@@ -195,9 +211,7 @@ public sealed class TweenCore : IDisposable {
             {
                 t.flags &= 0xFD; // Clear HasChanged Flag
 
-                if (updateCallbacks.TryGetValue(t.id, out Delegate updateDel)) {
-                    InvokeCallback(updateDel, t);
-                }
+                InvokeUpdateCallback(t);
             }
 
             if ((t.flags & 0x1) != 0) // NeedsChainStart
@@ -212,8 +226,8 @@ public sealed class TweenCore : IDisposable {
                 }
             }
 
-            if (t.isComplete && completeCallbacks.TryGetValue(t.id, out Delegate completeDel)) {
-                InvokeCallback(completeDel, t);
+            if (t.isComplete) {
+                InvokeUpdateCallback(t);
                 if (!t.isLoop) RemoveCallback(t.id);
             }
 
@@ -221,67 +235,149 @@ public sealed class TweenCore : IDisposable {
         }
     }
 
-    private void InvokeCallback(Delegate callback, TweenModel t) {
+    private void InvokeUpdateCallback(TweenModel t) {
         switch (t.type) {
             case TweenType.Float:
-                (callback as Action<float>)?.Invoke(t.floatValue);
+                if (floatUpdateCallbacks.TryGetValue(t.id, out var floatUpdate)) floatUpdate(t.floatValue);
                 break;
             case TweenType.Vector3:
-                (callback as Action<Vector3>)?.Invoke(t.vector3Value);
+                if (vector3UpdateCallbacks.TryGetValue(t.id, out var vector3Update)) vector3Update(t.vector3Value);
                 break;
             case TweenType.Vector2:
-                (callback as Action<Vector2>)?.Invoke(t.vector2Value);
+                if (vector2UpdateCallbacks.TryGetValue(t.id, out var vector2Update)) vector2Update(t.vector2Value);
                 break;
             case TweenType.Color:
-                (callback as Action<Color>)?.Invoke(t.colorValue);
+                if (colorUpdateCallbacks.TryGetValue(t.id, out var colorUpdate)) colorUpdate(t.colorValue);
                 break;
             case TweenType.Color32:
-                (callback as Action<Color32>)?.Invoke(t.color32Value);
+                if (color32UpdateCallbacks.TryGetValue(t.id, out var color32Update)) color32Update(t.color32Value);
                 break;
             case TweenType.Quaternion:
-                (callback as Action<Quaternion>)?.Invoke(t.quaternionValue);
-                break;
-            case TweenType.Wait:
-                (callback as Action)?.Invoke();
+                if (quaternionUpdateCallbacks.TryGetValue(t.id, out var quaternionUpdate)) quaternionUpdate(t.quaternionValue);
                 break;
             case TweenType.Int:
-                (callback as Action<int>)?.Invoke(t.intValue);
+                if (intUpdateCallbacks.TryGetValue(t.id, out var intUpdate)) intUpdate(t.intValue);
+                break;
+            case TweenType.Wait:
+                if (waitUpdateCallbacks.TryGetValue(t.id, out var waitUpdate)) waitUpdate();
+                break;
+        }
+    }
+
+    private void InvokeCompleteCallback(TweenModel t) {
+        switch (t.type) {
+            case TweenType.Float:
+                if (floatCompleteCallbacks.TryGetValue(t.id, out var floatComplete)) floatComplete(t.floatValue);
+                break;
+            case TweenType.Vector3:
+                if (vector3CompleteCallbacks.TryGetValue(t.id, out var vector3Complete)) vector3Complete(t.vector3Value);
+                break;
+            case TweenType.Vector2:
+                if (vector2CompleteCallbacks.TryGetValue(t.id, out var vector2Complete)) vector2Complete(t.vector2Value);
+                break;
+            case TweenType.Color:
+                if (colorCompleteCallbacks.TryGetValue(t.id, out var colorComplete)) colorComplete(t.colorValue);
+                break;
+            case TweenType.Color32:
+                if (color32CompleteCallbacks.TryGetValue(t.id, out var color32Complete)) color32Complete(t.color32Value);
+                break;
+            case TweenType.Quaternion:
+                if (quaternionCompleteCallbacks.TryGetValue(t.id, out var quaternionComplete)) quaternionComplete(t.quaternionValue);
+                break;
+            case TweenType.Int:
+                if (intCompleteCallbacks.TryGetValue(t.id, out var intComplete)) intComplete(t.intValue);
+                break;
+            case TweenType.Wait:
+                if (waitCompleteCallbacks.TryGetValue(t.id, out var waitComplete)) waitComplete();
                 break;
         }
     }
     #endregion
 
     #region 回调注册
-    public void OnUpdate<T>(int tweenId, Action<T> callback) where T : struct {
-        if (updateCallbacks.TryGetValue(tweenId, out var existing)) {
-            updateCallbacks[tweenId] = Delegate.Combine(existing, callback);
-        } else {
-            updateCallbacks[tweenId] = callback;
-        }
+    public void OnUpdate(int tweenId, Action<float> callback) {
+        AddCallback(floatUpdateCallbacks, tweenId, callback);
     }
 
-    public void OnComplete<T>(int tweenId, Action<T> callback) where T : struct {
-        if (completeCallbacks.TryGetValue(tweenId, out var existing)) {
-            completeCallbacks[tweenId] = Delegate.Combine(existing, callback);
+    public void OnUpdate(int tweenId, Action<Vector3> callback) {
+        AddCallback(vector3UpdateCallbacks, tweenId, callback);
+    }
+
+    public void OnUpdate(int tweenId, Action<Vector2> callback) {
+        AddCallback(vector2UpdateCallbacks, tweenId, callback);
+    }
+
+    public void OnUpdate(int tweenId, Action<Color> callback) {
+        AddCallback(colorUpdateCallbacks, tweenId, callback);
+    }
+
+    public void OnUpdate(int tweenId, Action<Color32> callback) {
+        AddCallback(color32UpdateCallbacks, tweenId, callback);
+    }
+
+    public void OnUpdate(int tweenId, Action<Quaternion> callback) {
+        AddCallback(quaternionUpdateCallbacks, tweenId, callback);
+    }
+
+    public void OnUpdate(int tweenId, Action<int> callback) {
+        AddCallback(intUpdateCallbacks, tweenId, callback);
+    }
+
+    public void OnUpdate(int tweenId, Action callback) {
+        AddCallback(waitUpdateCallbacks, tweenId, callback);
+    }
+
+    public void OnComplete(int tweenId, Action<float> callback) {
+        AddCallback(floatCompleteCallbacks, tweenId, callback);
+    }
+
+    public void OnComplete(int tweenId, Action<Vector3> callback) {
+        AddCallback(vector3CompleteCallbacks, tweenId, callback);
+    }
+
+    public void OnComplete(int tweenId, Action<Vector2> callback) {
+        AddCallback(vector2CompleteCallbacks, tweenId, callback);
+    }
+
+    public void OnComplete(int tweenId, Action<Color> callback) {
+        AddCallback(colorCompleteCallbacks, tweenId, callback);
+    }
+
+    public void OnComplete(int tweenId, Action<Color32> callback) {
+        AddCallback(color32CompleteCallbacks, tweenId, callback);
+    }
+
+    public void OnComplete(int tweenId, Action<Quaternion> callback) {
+        AddCallback(quaternionCompleteCallbacks, tweenId, callback);
+    }
+
+    public void OnComplete(int tweenId, Action<int> callback) {
+        AddCallback(intCompleteCallbacks, tweenId, callback);
+    }
+
+    public void OnComplete(int tweenId, Action callback) {
+        AddCallback(waitCompleteCallbacks, tweenId, callback);
+    }
+
+    void AddCallback<T>(Dictionary<int, T> dictionary, int tweenId, T callback) where T : Delegate {
+        if (dictionary.TryGetValue(tweenId, out var existing)) {
+            dictionary[tweenId] = (T)Delegate.Combine(existing, callback);
         } else {
-            completeCallbacks[tweenId] = callback;
+            dictionary[tweenId] = callback;
         }
     }
     #endregion
 
     #region 内存管理
-    private int AllocateIndex() {
+    int AllocateIndex() {
         if (freeIndices.Count > 0) return freeIndices.Dequeue();
 
         if (tweenCount >= activeTweens.Length) {
             int newSize = activeTweens.Length * 2;
             var newTweens = new NativeArray<TweenModel>(newSize, Allocator.Persistent);
-            var newChanged = new NativeArray<int>(newSize, Allocator.Persistent);
 
             NativeArray<TweenModel>.Copy(activeTweens, newTweens, activeTweens.Length);
-
             activeTweens.Dispose();
-
             activeTweens = newTweens;
         }
 
@@ -297,17 +393,48 @@ public sealed class TweenCore : IDisposable {
         RemoveCallback(tweenId);
     }
 
-    private void RemoveCallback(int tweenId) {
-        updateCallbacks.Remove(tweenId);
-        completeCallbacks.Remove(tweenId);
+    void RemoveCallback(int tweenId) {
+        floatUpdateCallbacks.Remove(tweenId);
+        vector3UpdateCallbacks.Remove(tweenId);
+        vector2UpdateCallbacks.Remove(tweenId);
+        colorUpdateCallbacks.Remove(tweenId);
+        color32UpdateCallbacks.Remove(tweenId);
+        quaternionUpdateCallbacks.Remove(tweenId);
+        intUpdateCallbacks.Remove(tweenId);
+        waitUpdateCallbacks.Remove(tweenId);
+
+        floatCompleteCallbacks.Remove(tweenId);
+        vector3CompleteCallbacks.Remove(tweenId);
+        vector2CompleteCallbacks.Remove(tweenId);
+        colorCompleteCallbacks.Remove(tweenId);
+        color32CompleteCallbacks.Remove(tweenId);
+        quaternionCompleteCallbacks.Remove(tweenId);
+        intCompleteCallbacks.Remove(tweenId);
+        waitCompleteCallbacks.Remove(tweenId);
     }
 
     public void Dispose() {
         if (activeTweens.IsCreated) activeTweens.Dispose();
         idToIndex.Clear();
         freeIndices.Clear();
-        updateCallbacks.Clear();
-        completeCallbacks.Clear();
+
+        floatUpdateCallbacks.Clear();
+        vector3UpdateCallbacks.Clear();
+        vector2UpdateCallbacks.Clear();
+        colorUpdateCallbacks.Clear();
+        color32UpdateCallbacks.Clear();
+        quaternionUpdateCallbacks.Clear();
+        intUpdateCallbacks.Clear();
+        waitUpdateCallbacks.Clear();
+
+        floatCompleteCallbacks.Clear();
+        vector3CompleteCallbacks.Clear();
+        vector2CompleteCallbacks.Clear();
+        colorCompleteCallbacks.Clear();
+        color32CompleteCallbacks.Clear();
+        quaternionCompleteCallbacks.Clear();
+        intCompleteCallbacks.Clear();
+        waitCompleteCallbacks.Clear();
     }
     #endregion
 
