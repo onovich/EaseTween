@@ -1,0 +1,85 @@
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Jobs;
+using UnityEngine;
+
+[BurstCompile]
+public struct TweenUpdateJob : IJobParallelFor {
+    public NativeArray<TweenModel> tweens;
+    public float deltaTime;
+
+    public void Execute(int index) {
+        TweenModel t = tweens[index];
+        if (!t.isPlaying || t.isComplete) return;
+
+        t.elapsedTime += deltaTime;
+        float progress = Mathf.Clamp01(t.elapsedTime / t.duration);
+
+        // 标记值已变化
+        t.flags |= 0x2; // 设置hasChanged标志
+
+        switch (t.type) {
+            case TweenType.Float:
+                t.floatValue = Ease(t.easing, t.floatStart, t.floatEnd, progress);
+                break;
+
+            case TweenType.Vector2:
+                t.vector2Value.x = Ease(t.easing, t.vector2Start.x, t.vector2End.x, progress);
+                t.vector2Value.y = Ease(t.easing, t.vector2Start.y, t.vector2End.y, progress);
+                break;
+
+            case TweenType.Vector3:
+                t.vector3Value.x = Ease(t.easing, t.vector3Start.x, t.vector3End.x, progress);
+                t.vector3Value.y = Ease(t.easing, t.vector3Start.y, t.vector3End.y, progress);
+                t.vector3Value.z = Ease(t.easing, t.vector3Start.z, t.vector3End.z, progress);
+                break;
+
+            case TweenType.Color:
+                t.colorValue.r = Ease(t.easing, t.colorStart.r, t.colorEnd.r, progress);
+                t.colorValue.g = Ease(t.easing, t.colorStart.g, t.colorEnd.g, progress);
+                t.colorValue.b = Ease(t.easing, t.colorStart.b, t.colorEnd.b, progress);
+                t.colorValue.a = Ease(t.easing, t.colorStart.a, t.colorEnd.a, progress);
+                break;
+
+            case TweenType.Quaternion:
+                t.quaternionValue = Quaternion.Slerp(t.quaternionStart, t.quaternionEnd,
+                    Ease(t.easing, 0, 1, progress));
+                break;
+
+            case TweenType.Color32:
+                t.color32Value.r = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.r, t.color32End.r, progress));
+                t.color32Value.g = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.g, t.color32End.g, progress));
+                t.color32Value.b = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.b, t.color32End.b, progress));
+                t.color32Value.a = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.a, t.color32End.a, progress));
+                break;
+        }
+
+        if (t.elapsedTime >= t.duration) {
+            t.isComplete = true;
+            if (t.nextId != -1 && !t.isLoop) {
+                t.flags |= 0x1; // 设置needsChainStart标志
+            } else if (t.isLoop) {
+                t.elapsedTime = 0;
+                t.isComplete = false;
+                ResetTweenValues(ref t);
+            }
+        }
+
+        tweens[index] = t;
+    }
+
+    private float Ease(EasingType easing, float start, float end, float progress) {
+        return Mathf.Lerp(start, end, progress);
+    }
+
+    private void ResetTweenValues(ref TweenModel t) {
+        switch (t.type) {
+            case TweenType.Float: t.floatValue = t.floatStart; break;
+            case TweenType.Vector2: t.vector2Value = t.vector2Start; break;
+            case TweenType.Vector3: t.vector3Value = t.vector3Start; break;
+            case TweenType.Quaternion: t.quaternionValue = t.quaternionStart; break;
+            case TweenType.Color32: t.color32Value = t.color32Start; break;
+            case TweenType.Color: t.colorValue = t.colorStart; break;
+        }
+    }
+}
