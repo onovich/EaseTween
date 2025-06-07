@@ -212,6 +212,10 @@ public sealed class TweenCore : IDisposable {
                 t.flags &= 0xFD; // Clear HasChanged Flag
 
                 InvokeUpdateCallback(t);
+
+                if (t.isComplete) {
+                    InvokeCompleteCallback(t);
+                }
             }
 
             if ((t.flags & 0x1) != 0) // NeedsChainStart
@@ -224,11 +228,6 @@ public sealed class TweenCore : IDisposable {
                     next.isComplete = false;
                     activeTweens[nextIndex] = next;
                 }
-            }
-
-            if (t.isComplete) {
-                InvokeUpdateCallback(t);
-                if (!t.isLoop) RemoveCallback(t.id);
             }
 
             activeTweens[i] = t;
