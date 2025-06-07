@@ -10,7 +10,9 @@ public class SampleMain : MonoBehaviour {
     public GameObject currentPoint;
     public bool isLoop;
     public float duration;
-    public bool isTearedDown;
+    public float textDuration;
+    public bool textIsLoop;
+    bool isTearedDown;
     public string[] strings = new string[] { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
     public Text text;
     int textIndex;
@@ -67,21 +69,19 @@ public class SampleMain : MonoBehaviour {
 
         int stringIndexStart = 0;
         int stringIndexEnd = strings.Length - 1;
-        int tween_int = tweenCore.Create(stringIndexStart, stringIndexEnd, 10, EasingType.Random, true);
+        int tween_int = tweenCore.Create(stringIndexStart, stringIndexEnd, textDuration, EasingType.Linear, textIsLoop);
         tweenCore.OnUpdate(tween_int, (int index) => {
             if (index < 0 || index >= strings.Length) {
                 Debug.LogError("Index out of bounds: " + index);
                 return;
             }
-            // text.text = strings[index];
-            textIndex = index;
+            text.text = strings[index];
         });
         tweenCore.Play(tween_int);
     }
 
     void Update() {
         tweenCore.Tick(Time.deltaTime);
-        text.text = strings[textIndex];
     }
 
     void OnApplicationQuit() {

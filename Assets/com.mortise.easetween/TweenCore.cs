@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Unity.Collections;
 using Unity.Jobs;
-using RD = Unity.Mathematics.Random;
 using UnityEngine;
 
 public sealed class TweenCore : IDisposable {
@@ -72,8 +70,7 @@ public sealed class TweenCore : IDisposable {
             floatValue = start,
             duration = duration,
             easing = easing,
-            isLoop = isLoop,
-            randomState = new RD((uint)(id + Environment.TickCount))
+            isLoop = isLoop
         };
 
         activeTweens[index] = tween;
@@ -93,8 +90,7 @@ public sealed class TweenCore : IDisposable {
             vector3Value = start,
             duration = duration,
             easing = easing,
-            isLoop = isLoop,
-            randomState = new RD((uint)(id + Environment.TickCount))
+            isLoop = isLoop
         };
 
         activeTweens[index] = tween;
@@ -114,8 +110,7 @@ public sealed class TweenCore : IDisposable {
             vector2Value = start,
             duration = duration,
             easing = easing,
-            isLoop = isLoop,
-            randomState = new RD((uint)(id + Environment.TickCount))
+            isLoop = isLoop
         };
 
         activeTweens[index] = tween;
@@ -135,8 +130,7 @@ public sealed class TweenCore : IDisposable {
             colorValue = start,
             duration = duration,
             easing = easing,
-            isLoop = isLoop,
-            randomState = new RD((uint)(id + Environment.TickCount))
+            isLoop = isLoop
         };
 
         activeTweens[index] = tween;
@@ -156,8 +150,7 @@ public sealed class TweenCore : IDisposable {
             color32Value = start,
             duration = duration,
             easing = easing,
-            isLoop = isLoop,
-            randomState = new RD((uint)(id + Environment.TickCount))
+            isLoop = isLoop
         };
 
         activeTweens[index] = tween;
@@ -177,8 +170,7 @@ public sealed class TweenCore : IDisposable {
             quaternionValue = start,
             duration = duration,
             easing = easing,
-            isLoop = isLoop,
-            randomState = new RD((uint)(id + Environment.TickCount))
+            isLoop = isLoop
         };
 
         activeTweens[index] = tween;
@@ -198,8 +190,7 @@ public sealed class TweenCore : IDisposable {
             intValue = start,
             duration = duration,
             easing = easing,
-            isLoop = isLoop,
-            randomState = new RD((uint)(id + Environment.TickCount))
+            isLoop = isLoop
         };
 
         activeTweens[index] = tween;

@@ -672,7 +672,8 @@ MonoBehaviour:
   currentPoint: {fileID: 502167338}
   isLoop: 0
   duration: 1
-  isTearedDown: 0
+  textDuration: 20
+  textIsLoop: 0
   strings:
   - a
   - b
@@ -709,8 +710,6 @@ MonoBehaviour:
   - 7
   - 8
   - 9
-  stringIndexStart: 0
-  stringIndexEnd: 0
   text: {fileID: 1531041813}
 --- !u!4 &1326925191
 Transform:

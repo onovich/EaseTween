@@ -1,7 +1,6 @@
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
-using RD = Unity.Mathematics.Random;
 using UnityEngine;
 
 [BurstCompile]
@@ -19,41 +18,41 @@ internal struct TweenUpdateJob : IJobParallelFor {
 
         switch (t.type) {
             case TweenType.Float:
-                t.floatValue = Ease(t.easing, t.floatStart, t.floatEnd, t.elapsedTime, t.duration, ref t.randomState);
+                t.floatValue = Ease(t.easing, t.floatStart, t.floatEnd, t.elapsedTime, t.duration);
                 break;
 
             case TweenType.Vector2:
-                t.vector2Value.x = Ease(t.easing, t.vector2Start.x, t.vector2End.x, t.elapsedTime, t.duration, ref t.randomState);
-                t.vector2Value.y = Ease(t.easing, t.vector2Start.y, t.vector2End.y, t.elapsedTime, t.duration, ref t.randomState);
+                t.vector2Value.x = Ease(t.easing, t.vector2Start.x, t.vector2End.x, t.elapsedTime, t.duration);
+                t.vector2Value.y = Ease(t.easing, t.vector2Start.y, t.vector2End.y, t.elapsedTime, t.duration);
                 break;
 
             case TweenType.Vector3:
-                t.vector3Value.x = Ease(t.easing, t.vector3Start.x, t.vector3End.x, t.elapsedTime, t.duration, ref t.randomState);
-                t.vector3Value.y = Ease(t.easing, t.vector3Start.y, t.vector3End.y, t.elapsedTime, t.duration, ref t.randomState);
-                t.vector3Value.z = Ease(t.easing, t.vector3Start.z, t.vector3End.z, t.elapsedTime, t.duration, ref t.randomState);
+                t.vector3Value.x = Ease(t.easing, t.vector3Start.x, t.vector3End.x, t.elapsedTime, t.duration);
+                t.vector3Value.y = Ease(t.easing, t.vector3Start.y, t.vector3End.y, t.elapsedTime, t.duration);
+                t.vector3Value.z = Ease(t.easing, t.vector3Start.z, t.vector3End.z, t.elapsedTime, t.duration);
                 break;
 
             case TweenType.Color:
-                t.colorValue.r = Ease(t.easing, t.colorStart.r, t.colorEnd.r, t.elapsedTime, t.duration, ref t.randomState);
-                t.colorValue.g = Ease(t.easing, t.colorStart.g, t.colorEnd.g, t.elapsedTime, t.duration, ref t.randomState);
-                t.colorValue.b = Ease(t.easing, t.colorStart.b, t.colorEnd.b, t.elapsedTime, t.duration, ref t.randomState);
-                t.colorValue.a = Ease(t.easing, t.colorStart.a, t.colorEnd.a, t.elapsedTime, t.duration, ref t.randomState);
+                t.colorValue.r = Ease(t.easing, t.colorStart.r, t.colorEnd.r, t.elapsedTime, t.duration);
+                t.colorValue.g = Ease(t.easing, t.colorStart.g, t.colorEnd.g, t.elapsedTime, t.duration);
+                t.colorValue.b = Ease(t.easing, t.colorStart.b, t.colorEnd.b, t.elapsedTime, t.duration);
+                t.colorValue.a = Ease(t.easing, t.colorStart.a, t.colorEnd.a, t.elapsedTime, t.duration);
                 break;
 
             case TweenType.Quaternion:
                 t.quaternionValue = Quaternion.Slerp(t.quaternionStart, t.quaternionEnd,
-                    Ease(t.easing, 0, 1, t.elapsedTime, t.duration, ref t.randomState));
+                    Ease(t.easing, 0, 1, t.elapsedTime, t.duration));
                 break;
 
             case TweenType.Color32:
-                t.color32Value.r = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.r, t.color32End.r, t.elapsedTime, t.duration, ref t.randomState));
-                t.color32Value.g = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.g, t.color32End.g, t.elapsedTime, t.duration, ref t.randomState));
-                t.color32Value.b = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.b, t.color32End.b, t.elapsedTime, t.duration, ref t.randomState));
-                t.color32Value.a = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.a, t.color32End.a, t.elapsedTime, t.duration, ref t.randomState));
+                t.color32Value.r = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.r, t.color32End.r, t.elapsedTime, t.duration));
+                t.color32Value.g = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.g, t.color32End.g, t.elapsedTime, t.duration));
+                t.color32Value.b = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.b, t.color32End.b, t.elapsedTime, t.duration));
+                t.color32Value.a = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.a, t.color32End.a, t.elapsedTime, t.duration));
                 break;
 
             case TweenType.Int:
-                t.intValue = Mathf.RoundToInt(Ease(t.easing, t.intStart, t.intEnd - t.intStart, t.elapsedTime, t.duration, ref t.randomState));
+                t.intValue = Mathf.RoundToInt(Ease(t.easing, t.intStart, t.intEnd - t.intStart, t.elapsedTime, t.duration));
                 break;
         }
 
@@ -71,8 +70,8 @@ internal struct TweenUpdateJob : IJobParallelFor {
         tweens[index] = t;
     }
 
-    private float Ease(EasingType easing, float start, float end, float time, float duration, ref RD rd) {
-        return EasingFunction.Easing(easing, time, start, end - start, duration, ref rd);
+    private float Ease(EasingType easing, float start, float end, float time, float duration) {
+        return EasingFunction.Easing(easing, time, start, end - start, duration);
     }
 
     private void ResetTweenValues(ref TweenModel t) {
