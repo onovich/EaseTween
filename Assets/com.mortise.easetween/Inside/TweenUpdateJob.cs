@@ -13,44 +13,45 @@ public struct TweenUpdateJob : IJobParallelFor {
         if (!t.isPlaying || t.isComplete) return;
 
         t.elapsedTime += deltaTime;
-        float progress = Mathf.Clamp01(t.elapsedTime / t.duration);
+        float time = t.elapsedTime;
+        float duration = t.duration;
 
         // 标记值已变化
         t.flags |= 0x2; // 设置hasChanged标志
 
         switch (t.type) {
             case TweenType.Float:
-                t.floatValue = Ease(t.easing, t.floatStart, t.floatEnd, progress);
+                t.floatValue = Ease(t.easing, t.floatStart, t.floatEnd, time, duration);
                 break;
 
             case TweenType.Vector2:
-                t.vector2Value.x = Ease(t.easing, t.vector2Start.x, t.vector2End.x, progress);
-                t.vector2Value.y = Ease(t.easing, t.vector2Start.y, t.vector2End.y, progress);
+                t.vector2Value.x = Ease(t.easing, t.vector2Start.x, t.vector2End.x, time, duration);
+                t.vector2Value.y = Ease(t.easing, t.vector2Start.y, t.vector2End.y, time, duration);
                 break;
 
             case TweenType.Vector3:
-                t.vector3Value.x = Ease(t.easing, t.vector3Start.x, t.vector3End.x, progress);
-                t.vector3Value.y = Ease(t.easing, t.vector3Start.y, t.vector3End.y, progress);
-                t.vector3Value.z = Ease(t.easing, t.vector3Start.z, t.vector3End.z, progress);
+                t.vector3Value.x = Ease(t.easing, t.vector3Start.x, t.vector3End.x, time, duration);
+                t.vector3Value.y = Ease(t.easing, t.vector3Start.y, t.vector3End.y, time, duration);
+                t.vector3Value.z = Ease(t.easing, t.vector3Start.z, t.vector3End.z, time, duration);
                 break;
 
             case TweenType.Color:
-                t.colorValue.r = Ease(t.easing, t.colorStart.r, t.colorEnd.r, progress);
-                t.colorValue.g = Ease(t.easing, t.colorStart.g, t.colorEnd.g, progress);
-                t.colorValue.b = Ease(t.easing, t.colorStart.b, t.colorEnd.b, progress);
-                t.colorValue.a = Ease(t.easing, t.colorStart.a, t.colorEnd.a, progress);
+                t.colorValue.r = Ease(t.easing, t.colorStart.r, t.colorEnd.r, time, duration);
+                t.colorValue.g = Ease(t.easing, t.colorStart.g, t.colorEnd.g, time, duration);
+                t.colorValue.b = Ease(t.easing, t.colorStart.b, t.colorEnd.b, time, duration);
+                t.colorValue.a = Ease(t.easing, t.colorStart.a, t.colorEnd.a, time, duration);
                 break;
 
             case TweenType.Quaternion:
                 t.quaternionValue = Quaternion.Slerp(t.quaternionStart, t.quaternionEnd,
-                    Ease(t.easing, 0, 1, progress));
+                    Ease(t.easing, 0, 1, time, duration));
                 break;
 
             case TweenType.Color32:
-                t.color32Value.r = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.r, t.color32End.r, progress));
-                t.color32Value.g = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.g, t.color32End.g, progress));
-                t.color32Value.b = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.b, t.color32End.b, progress));
-                t.color32Value.a = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.a, t.color32End.a, progress));
+                t.color32Value.r = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.r, t.color32End.r, time, duration));
+                t.color32Value.g = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.g, t.color32End.g, time, duration));
+                t.color32Value.b = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.b, t.color32End.b, time, duration));
+                t.color32Value.a = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.a, t.color32End.a, time, duration));
                 break;
         }
 
@@ -68,8 +69,8 @@ public struct TweenUpdateJob : IJobParallelFor {
         tweens[index] = t;
     }
 
-    private float Ease(EasingType easing, float start, float end, float progress) {
-        return Mathf.Lerp(start, end, progress);
+    private float Ease(EasingType easing, float start, float end, float time, float duration) {
+        return EasingFunction.Easing(easing, time, start, end - start, duration);
     }
 
     private void ResetTweenValues(ref TweenModel t) {

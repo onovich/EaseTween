@@ -15,8 +15,8 @@ public sealed class TweenCore : IDisposable {
     private Dictionary<int, Delegate> updateCallbacks = new Dictionary<int, Delegate>();
     private Dictionary<int, Delegate> completeCallbacks = new Dictionary<int, Delegate>();
 
-    public TweenCore(int initialCapacity = 128) {
-        activeTweens = new NativeArray<TweenModel>(initialCapacity, Allocator.Persistent);
+    public TweenCore(int capacity = 128) {
+        activeTweens = new NativeArray<TweenModel>(capacity, Allocator.Persistent);
     }
 
     #region 创建Tween
@@ -168,25 +168,21 @@ public sealed class TweenCore : IDisposable {
         JobHandle handle = job.Schedule(tweenCount, 32);
         handle.Complete();
 
-        // 处理所有活跃的Tween
         for (int i = 0; i < tweenCount; i++) {
             TweenModel t = activeTweens[i];
 
-            // 检查是否有变化需要回调
             if ((t.flags & 0x2) != 0) // hasChanged
             {
-                t.flags &= 0xFD; // 清除hasChanged标志
+                t.flags &= 0xFD; // Clear hasChanged Flag
 
-                // 触发Update回调
                 if (updateCallbacks.TryGetValue(t.id, out Delegate updateDel)) {
                     InvokeCallback(updateDel, t);
                 }
             }
 
-            // 处理链式调用
             if ((t.flags & 0x1) != 0) // needsChainStart
             {
-                t.flags &= 0xFE; // 清除needsChainStart标志
+                t.flags &= 0xFE; // Clear needsChainStart Flag
                 if (t.nextId != -1 && idToIndex.TryGetValue(t.nextId, out int nextIndex)) {
                     TweenModel next = activeTweens[nextIndex];
                     next.isPlaying = true;
@@ -196,23 +192,12 @@ public sealed class TweenCore : IDisposable {
                 }
             }
 
-            // 处理完成回调
             if (t.isComplete && completeCallbacks.TryGetValue(t.id, out Delegate completeDel)) {
                 InvokeCallback(completeDel, t);
                 if (!t.isLoop) RemoveCallback(t.id);
             }
 
             activeTweens[i] = t;
-        }
-    }
-
-    private void InvokeCallbacks(TweenModel t) {
-        if (updateCallbacks.TryGetValue(t.id, out Delegate updateDel)) {
-            InvokeCallback(updateDel, t);
-        }
-
-        if (t.isComplete && completeCallbacks.TryGetValue(t.id, out Delegate completeDel)) {
-            InvokeCallback(completeDel, t);
         }
     }
 

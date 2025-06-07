@@ -496,7 +496,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38cd93dbd275b48eaaf59343b633696d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  easingType: 1
+  easingType: 2
   startPoint: {fileID: 662727925}
   endPoint: {fileID: 577439800}
   currentPoint: {fileID: 502167338}
