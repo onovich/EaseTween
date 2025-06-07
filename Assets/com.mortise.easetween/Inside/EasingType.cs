@@ -31,4 +31,5 @@ public enum EasingType : byte {
     BounceIn,
     BounceOut,
     BounceInOut,
+    Random,
 }

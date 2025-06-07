@@ -97,6 +97,9 @@ internal static class EasingFunction {
         if (mode == EasingType.BounceInOut) {
             return BounceInOut(t, b, c, d);
         }
+        if (mode == EasingType.Random) {
+            return RandomEase(t, b, c, d);  
+        }
         return Linear(t, b, c, d);
     }
 
@@ -257,6 +260,10 @@ internal static class EasingFunction {
     static float BounceInOut(float t, float b, float c, float d) {
         if (t < d / 2) return BounceIn(t * 2, 0, c, d) * .5f + b;
         else return BounceOut(t * 2 - d, 0, c, d) * .5f + c * .5f + b;
+    }
+
+    static float RandomEase(float t, float b, float c, float d) {
+        return b + UnityEngine.Random.value * c;  
     }
 
 }

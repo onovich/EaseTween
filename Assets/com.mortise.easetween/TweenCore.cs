@@ -140,6 +140,26 @@ public sealed class TweenCore : IDisposable {
         return id;
     }
 
+    public int Create(int start, int end, float duration, EasingType easing, bool isLoop = false) {
+        int id = nextId++;
+        int index = AllocateIndex();
+
+        TweenModel tween = new TweenModel {
+            id = id,
+            type = TweenType.Int,
+            intStart = start,
+            intEnd = end,
+            intValue = start,
+            duration = duration,
+            easing = easing,
+            isLoop = isLoop
+        };
+
+        activeTweens[index] = tween;
+        idToIndex[id] = index;
+        return id;
+    }
+
     public int CreateWait(float duration) {
         int id = nextId++;
         int index = AllocateIndex();
@@ -223,6 +243,9 @@ public sealed class TweenCore : IDisposable {
                 break;
             case TweenType.Wait:
                 (callback as Action)?.Invoke();
+                break;
+            case TweenType.Int:
+                (callback as Action<int>)?.Invoke(t.intValue);
                 break;
         }
     }

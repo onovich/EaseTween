@@ -22,6 +22,7 @@ public struct TweenModel {
     [FieldOffset(20)] public Color colorValue;
     [FieldOffset(20)] public Quaternion quaternionValue;
     [FieldOffset(20)] public Color32 color32Value;
+    [FieldOffset(20)] public int intValue;
 
     // 起始值联合体 (16字节)
     [FieldOffset(36)] public float floatStart;
@@ -30,6 +31,7 @@ public struct TweenModel {
     [FieldOffset(36)] public Color colorStart;
     [FieldOffset(36)] public Quaternion quaternionStart;
     [FieldOffset(36)] public Color32 color32Start;
+    [FieldOffset(36)] public int intStart;
 
     // 结束值联合体 (16字节)
     [FieldOffset(52)] public float floatEnd;
@@ -38,6 +40,7 @@ public struct TweenModel {
     [FieldOffset(52)] public Color colorEnd;
     [FieldOffset(52)] public Quaternion quaternionEnd;
     [FieldOffset(52)] public Color32 color32End;
+    [FieldOffset(52)] public int intEnd;
 
     // 链式调用信息 (4字节)
     [FieldOffset(68)] public int nextId;

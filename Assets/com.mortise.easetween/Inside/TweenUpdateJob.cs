@@ -52,6 +52,10 @@ public struct TweenUpdateJob : IJobParallelFor {
                 t.color32Value.b = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.b, t.color32End.b, time, duration));
                 t.color32Value.a = (byte)Mathf.RoundToInt(Ease(t.easing, t.color32Start.a, t.color32End.a, time, duration));
                 break;
+
+            case TweenType.Int:
+                t.intValue = Mathf.RoundToInt(Ease(t.easing, t.intStart, t.intEnd - t.intStart, time, duration));
+                break;
         }
 
         if (t.elapsedTime >= t.duration) {

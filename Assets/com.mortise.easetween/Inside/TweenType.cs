@@ -5,5 +5,6 @@ public enum TweenType : byte {
     Color,
     Color32,
     Wait,
-    Quaternion
+    Quaternion,
+    Int,
 }
