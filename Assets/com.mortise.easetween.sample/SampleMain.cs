@@ -16,45 +16,45 @@ public class SampleMain : MonoBehaviour {
 
         var startPos = startPoint.transform.position;
         var endPos = endPoint.transform.position;
-        var posTween1 = tweenCore.Create(startPos, endPos, duration, easingType, isLoop);
-        tweenCore.OnUpdate(posTween1, (Vector3 pos) => {
+        var tween_move_from_start_to_end = tweenCore.Create(startPos, endPos, duration, easingType, isLoop);
+        tweenCore.OnUpdate(tween_move_from_start_to_end, (Vector3 pos) => {
             currentPoint.transform.position = pos;
         });
-        var posTween2 = tweenCore.Create(endPos, startPos, duration, easingType, isLoop);
-        tweenCore.OnUpdate(posTween2, (Vector3 pos) => {
+        var tween_move_from_end_to_start = tweenCore.Create(endPos, startPos, duration, easingType, isLoop);
+        tweenCore.OnUpdate(tween_move_from_end_to_start, (Vector3 pos) => {
             currentPoint.transform.position = pos;
         });
 
         var startScale = startPoint.transform.localScale;
         var endScale = endPoint.transform.localScale;
-        var scaleTween1 = tweenCore.Create(startScale, endScale, duration, easingType, isLoop);
-        tweenCore.OnUpdate(scaleTween1, (Vector3 scale) => {
+        var tween_scale_from_start_to_end = tweenCore.Create(startScale, endScale, duration, easingType, isLoop);
+        tweenCore.OnUpdate(tween_scale_from_start_to_end, (Vector3 scale) => {
             currentPoint.transform.localScale = scale;
         });
-        var scaleTween2 = tweenCore.Create(endScale, startScale, duration, easingType, isLoop);
-        tweenCore.OnUpdate(scaleTween2, (Vector3 scale) => {
+        var tween_from_end_to_start = tweenCore.Create(endScale, startScale, duration, easingType, isLoop);
+        tweenCore.OnUpdate(tween_from_end_to_start, (Vector3 scale) => {
             currentPoint.transform.localScale = scale;
         });
 
         var startColor = startPoint.GetComponent<SpriteRenderer>().color;
         var endColor = endPoint.GetComponent<SpriteRenderer>().color;
-        var colorTween1 = tweenCore.Create(startColor, endColor, duration, easingType, isLoop);
-        tweenCore.OnUpdate(colorTween1, (Color color) => {
+        var tween_color_from_start_to_end = tweenCore.Create(startColor, endColor, duration, easingType, isLoop);
+        tweenCore.OnUpdate(tween_color_from_start_to_end, (Color color) => {
             currentPoint.GetComponent<SpriteRenderer>().color = color;
         });
-        var colorTween2 = tweenCore.Create(endColor, startColor, duration, easingType, isLoop);
-        tweenCore.OnUpdate(colorTween2, (Color color) => {
+        var tween_color_from_end_to_start = tweenCore.Create(endColor, startColor, duration, easingType, isLoop);
+        tweenCore.OnUpdate(tween_color_from_end_to_start, (Color color) => {
             currentPoint.GetComponent<SpriteRenderer>().color = color;
         });
 
-        tweenCore.Link(posTween1, scaleTween1);
-        tweenCore.Link(scaleTween1, colorTween1);
-        tweenCore.Link(colorTween1, posTween2);
-        tweenCore.Link(posTween2, scaleTween2);
-        tweenCore.Link(scaleTween2, colorTween2);
-        tweenCore.Link(colorTween2, posTween1);
+        tweenCore.Link(tween_move_from_start_to_end, tween_scale_from_start_to_end);
+        tweenCore.Link(tween_scale_from_start_to_end, tween_color_from_start_to_end);
+        tweenCore.Link(tween_color_from_start_to_end, tween_move_from_end_to_start);
+        tweenCore.Link(tween_move_from_end_to_start, tween_from_end_to_start);
+        tweenCore.Link(tween_from_end_to_start, tween_color_from_end_to_start);
+        tweenCore.Link(tween_color_from_end_to_start, tween_move_from_start_to_end);
 
-        tweenCore.Play(posTween1);
+        tweenCore.Play(tween_move_from_start_to_end);
     }
 
     void Update() {
