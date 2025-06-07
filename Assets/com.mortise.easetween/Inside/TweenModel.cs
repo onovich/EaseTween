@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using UnityEngine;
+using RD = Unity.Mathematics.Random;
 
 [StructLayout(LayoutKind.Explicit)]
 internal struct TweenModel {
@@ -44,5 +45,8 @@ internal struct TweenModel {
 
     // Chain Info (4字节)
     [FieldOffset(68)] internal int nextId;
+
+    // Random State (8字节)
+    [FieldOffset(72)] internal RD randomState;
 
 }

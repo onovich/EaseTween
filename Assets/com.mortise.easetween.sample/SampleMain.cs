@@ -67,7 +67,7 @@ public class SampleMain : MonoBehaviour {
 
         int stringIndexStart = 0;
         int stringIndexEnd = strings.Length - 1;
-        int tween_int = tweenCore.Create(stringIndexStart, stringIndexEnd, duration, EasingType.Random, true);
+        int tween_int = tweenCore.Create(stringIndexStart, stringIndexEnd, 10, EasingType.Random, true);
         tweenCore.OnUpdate(tween_int, (int index) => {
             if (index < 0 || index >= strings.Length) {
                 Debug.LogError("Index out of bounds: " + index);

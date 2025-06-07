@@ -1,9 +1,10 @@
 using System;
 using UnityEngine;
+using RD = Unity.Mathematics.Random;
 
 internal static class EasingFunction {
 
-    internal static float Easing(EasingType mode, float t, float b, float c, float d) {
+    internal static float Easing(EasingType mode, float t, float b, float c, float d, ref RD rd) {
         if (mode == EasingType.Linear) {
             return Linear(t, b, c, d);
         }
@@ -98,7 +99,7 @@ internal static class EasingFunction {
             return BounceInOut(t, b, c, d);
         }
         if (mode == EasingType.Random) {
-            return RandomEase(t, b, c, d);  
+            return RandomEase(t, b, c, d, ref rd);
         }
         return Linear(t, b, c, d);
     }
@@ -262,8 +263,8 @@ internal static class EasingFunction {
         else return BounceOut(t * 2 - d, 0, c, d) * .5f + c * .5f + b;
     }
 
-    static float RandomEase(float t, float b, float c, float d) {
-        return b + UnityEngine.Random.value * c;  
+    static float RandomEase(float t, float b, float c, float d, ref RD random) {
+        return b + random.NextFloat(0f, 1f) * c;
     }
 
 }
