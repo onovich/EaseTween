@@ -5,7 +5,11 @@ using UnityEngine;
 
 namespace Mortise.EaseTween {
 
-    [BurstCompile]
+    [BurstCompile(
+        CompileSynchronously = true,  
+        FloatMode = FloatMode.Fast,  
+        DisableSafetyChecks = true   
+    )]
     internal struct TweenUpdateJob : IJobParallelFor {
         internal NativeArray<TweenModel> tweens;
         internal float deltaTime;
