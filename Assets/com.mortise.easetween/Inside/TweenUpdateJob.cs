@@ -10,11 +10,11 @@ namespace Mortise.EaseTween {
         FloatMode = FloatMode.Fast,  
         DisableSafetyChecks = true   
     )]
-    internal struct TweenUpdateJob : IJobParallelFor {
+    internal struct TweenUpdateJob : IJobFor {
         internal NativeArray<TweenModel> tweens;
         internal float deltaTime;
 
-        void IJobParallelFor.Execute(int index) {
+        void IJobFor.Execute(int index) {
             TweenModel t = tweens[index];
             if (!t.isPlaying || t.isComplete) return;
 
