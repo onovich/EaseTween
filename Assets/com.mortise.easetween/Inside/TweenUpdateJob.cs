@@ -6,13 +6,16 @@ using UnityEngine;
 namespace Mortise.EaseTween {
 
     [BurstCompile(
-        CompileSynchronously = true,  
-        FloatMode = FloatMode.Fast,  
-        DisableSafetyChecks = true   
+        CompileSynchronously = true,
+        FloatMode = FloatMode.Fast,
+        FloatPrecision = FloatPrecision.Low,
+        DisableSafetyChecks = true
     )]
     internal struct TweenUpdateJob : IJobFor {
         internal NativeArray<TweenModel> tweens;
         internal float deltaTime;
+
+        public void Execute(int index) => Execute(index);
 
         void IJobFor.Execute(int index) {
             TweenModel t = tweens[index];
