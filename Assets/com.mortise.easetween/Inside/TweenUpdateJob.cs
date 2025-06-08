@@ -5,19 +5,13 @@ using UnityEngine;
 
 namespace Mortise.EaseTween {
 
-    [BurstCompile(
-        CompileSynchronously = true,
-        FloatMode = FloatMode.Fast,
-        FloatPrecision = FloatPrecision.Low,
-        DisableSafetyChecks = true
-    )]
-    internal struct TweenUpdateJob : IJobFor {
+    internal struct TweenUpdateJob : IJobParallelFor {
         internal NativeArray<TweenModel> tweens;
         internal float deltaTime;
 
         public void Execute(int index) => Execute(index);
 
-        void IJobFor.Execute(int index) {
+        void IJobParallelFor.Execute(int index) {
             TweenModel t = tweens[index];
             if (!t.isPlaying || t.isComplete) return;
 

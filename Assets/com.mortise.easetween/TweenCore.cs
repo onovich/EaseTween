@@ -225,12 +225,7 @@ namespace Mortise.EaseTween {
                 deltaTime = deltaTime
             };
 
-            // JobHandle handle = job.Schedule(tweenCount, 32);
-            // handle.Complete();
-            var handle = JobHandle.CombineDependencies(
-       default(JobHandle),
-       job.ScheduleParallel(tweenCount, 32, new JobHandle())
-   );
+            JobHandle handle = job.Schedule(tweenCount, 32);
             handle.Complete();
 
             for (int i = 0; i < tweenCount; i++) {
