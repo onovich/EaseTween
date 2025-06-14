@@ -476,7 +476,8 @@ namespace MortiseFrame.EaseTween {
 
         public void TryPlay(int tweenId) {
             bool isPlaying = IsPlaying(tweenId);
-            if (!isPlaying) {
+            bool isComplete = IsComplete(tweenId);
+            if (!isPlaying || isComplete) {
                 Play(tweenId);
             }
         }
@@ -521,8 +522,7 @@ namespace MortiseFrame.EaseTween {
 
         #region 状态查询
         public bool IsPlaying(int tweenId) {
-            return idToIndex.TryGetValue(tweenId, out int index) && activeTweens[index].isPlaying
-                && !activeTweens[index].isComplete;
+            return idToIndex.TryGetValue(tweenId, out int index) && activeTweens[index].isPlaying;
         }
 
         public bool IsComplete(int tweenId) {
