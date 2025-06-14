@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace Mortise.EaseTween {
+namespace MortiseFrame.EaseTween {
 
     [StructLayout(LayoutKind.Explicit)]
     internal struct TweenModel {

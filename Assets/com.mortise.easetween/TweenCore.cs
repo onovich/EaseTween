@@ -4,7 +4,7 @@ using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
 
-namespace Mortise.EaseTween {
+namespace MortiseFrame.EaseTween {
 
     public sealed class TweenCore : IDisposable {
         int tweenCount;

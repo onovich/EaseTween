@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Mortise.EaseTween {
+namespace MortiseFrame.EaseTween {
 
     internal static class EasingFunction {
 

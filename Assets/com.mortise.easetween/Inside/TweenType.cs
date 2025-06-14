@@ -1,4 +1,4 @@
-namespace Mortise.EaseTween {
+namespace MortiseFrame.EaseTween {
 
     public enum TweenType : byte {
         Float,

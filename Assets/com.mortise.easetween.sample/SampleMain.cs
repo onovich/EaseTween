@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Mortise.EaseTween.Sample {
+namespace MortiseFrame.EaseTween.Sample {
 
     public class SampleMain : MonoBehaviour {
 

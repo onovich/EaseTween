@@ -3,7 +3,7 @@ using Unity.Collections;
 using Unity.Jobs;
 using UnityEngine;
 
-namespace Mortise.EaseTween {
+namespace MortiseFrame.EaseTween {
 
     internal struct TweenUpdateJob : IJobParallelFor {
         internal NativeArray<TweenModel> tweens;
