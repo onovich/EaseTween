@@ -474,6 +474,13 @@ namespace MortiseFrame.EaseTween {
             }
         }
 
+        public void TryPlay(int tweenId) {
+            bool isPlaying = IsPlaying(tweenId);
+            if (!isPlaying) {
+                Play(tweenId);
+            }
+        }
+
         public void Resume(int tweenId) {
             if (idToIndex.TryGetValue(tweenId, out int index)) {
                 TweenModel t = activeTweens[index];
