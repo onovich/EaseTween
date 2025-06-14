@@ -521,7 +521,8 @@ namespace MortiseFrame.EaseTween {
 
         #region 状态查询
         public bool IsPlaying(int tweenId) {
-            return idToIndex.TryGetValue(tweenId, out int index) && activeTweens[index].isPlaying;
+            return idToIndex.TryGetValue(tweenId, out int index) && activeTweens[index].isPlaying
+                && !activeTweens[index].isComplete;
         }
 
         public bool IsComplete(int tweenId) {
